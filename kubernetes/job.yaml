@@ -1,0 +1,58 @@
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: alarm-clock
+  namespace: map
+  labels:
+    app: alarm-clock
+spec:
+  template:
+    spec:
+      containers:
+        - name: alarm-clock
+          image: 'nginx:alpine'
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+          resources:
+            limits:
+              cpu: 500m
+              memory: 300Mi
+            requests:
+              cpu: 200m
+              memory: 100Mi
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+
+---
+kind: CronJob
+apiVersion: batch/v1beta1
+metadata:
+  name: cronjob
+  namespace: map
+  labels:
+    app: cronjob
+spec:
+  schedule: '* * * * *'
+  concurrencyPolicy: Forbid
+  suspend: false
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: alarm-clock
+              image: 'nginx:alpine'
+              env:
+                - name: TZ
+                  value: "Asia/Shanghai"
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 300Mi
+                requests:
+                  cpu: 200m
+                  memory: 100Mi
+              imagePullPolicy: IfNotPresent
+          restartPolicy: Never

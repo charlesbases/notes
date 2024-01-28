@@ -1,0 +1,196 @@
+---
+# kind: 资源类型
+kind: Deployment
+# apiVersion: api 版本
+apiVersion: apps/v1
+# metadata: 元数据
+metadata:
+  # name: Pod 名称
+  name: nginx
+  # namespace: 命名空间。不同命名空间在逻辑上相互隔离。
+  #   default: 默认
+  #   kube-system: kubernetes 系统组件使用
+  #   kube-public:  公共资源使用(并不常用)。
+  namespace: app
+  # labels: 标签。与 spec.selector.matchLabels 和 spec.template.metadata.labels 保持一致
+  #   key: value
+  labels:
+    app: nginx
+    version: v1.0.0
+# spec: 资源规格
+spec:
+  # replicas: 预定副本数量
+  replicas: 3
+  # restartPolicy: 重启策略
+  #   Always: 默认策略。当容器终止退出后，总是重启容器。
+  #   Never: 当容器终止退出，从不重启容器。
+  #   OnFailure: 当容器异常退出（退出状态码非 0）时，才重启容器。
+  restartPolicy: Always
+  # selector: 标签选择器。与 metadata.labels 和 spec.template.metadata.labels 保持一致
+  selector:
+    matchLabels:
+      app: nginx
+      version: v1.0.0
+  # template: Pod 模板
+  template:
+    # metadata: Pod 元数据
+    metadata:
+      # labels: 标签。与 metadata.labels 和 spec.selector.matchLabels 保持一致
+      labels:
+        app: nginx
+        version: v1.0.0
+    # spec: Pod 规格
+    spec:
+      # 防止 'error: hostname for pod is too long'
+      hostname: nginx
+      # nodeSelector: Node 选择器
+      #   key: value
+      nodeSelector:
+        app: "true"
+      # 亲和性
+      affinity:
+        # podAntiAffinity: pod 反亲和规则
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # 多副本或集群部署时，阻止 pod 在同一节点上运行
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - nats
+              topologyKey: "kubernetes.io/hostname"
+        # nodeAffinity: 节点亲和
+        nodeAffinity:
+          # requiredDuringSchedulingIgnoredDuringExecution: 硬亲和性。只会被调度到相应节点
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # 节点选择器
+            nodeSelectorTerms:
+              # 指定节点运行
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    # operator:
+                    #   In, NotIn, Exists, DoesNotExist, Gt, Lt.
+                    operator: In
+                    values:
+                      - "10.75.2.8"
+          # preferredDuringSchedulingIgnoredDuringExecution: 软亲和性。优先调度到相应节点
+          preferredDuringSchedulingIgnoredDuringExecution:
+            # 节点选择器
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    # operator:
+                    #   In, NotIn, Exists, DoesNotExist, Gt, Lt.
+                    operator: In
+                    values:
+                      - "10.75.2.8"
+      # containers: 容器配置
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          # imagePullPolicy: 镜像拉取策略
+          #   IfNotPresent: 默认值。镜像在宿主机上不存在时才拉取。
+          #   Always: 每次创建 Pod 都会重新拉取一次镜像。
+          #   Never: Pod 永远不会主动拉取镜像。
+          imagePullPolicy: IfNotPresent
+          # ports: 端口
+          ports:
+            - name: http
+              # hostPort: 80
+              #   hostPort 与 hostNetwork 异同点
+              #   相同点:
+              #     本质上都是暴露 Pod 所在节点 IP 给终端用户。此外宿主机端口占用也导致不能在同一节点上部署多个程序使用同一端口，
+              #     因此一般情况下不建议使用 hostPort 方式。
+              #   不同点：
+              #     hostNetwork: Pod 实际上使用的是所在节点的网络地址空间，即 Pod IP 是宿主机 IP，而非 CNI 分配的 Pod IP，端口是宿主机网络监听端口
+              #     hostPort: Pod IP 并非宿主机 IP，而是 CNI 分配的 Pod IP，和普通的 Pod 使用一样的 IP 分配方式，端口并非宿主机网络监听端口，
+              #       只是使用了 DNAT 机制将 hostPort 指定端口映射到了容器的端口之上(可通过 iptables 查看)。外部访问此 Pod时，
+              #       仍然使用宿主机和 hostPort 方式
+              #     另，hostNetwork 在 Pod 中是全局的，当前 Pod 上所有端口都会使用宿主机的网络地址空间；hostPort 可指定 port 使用宿主机端口映射
+              containerPort: 80
+          # volumeMounts: 数据卷挂载
+          volumeMounts:
+            # name: volumes.name
+            - name: localtime
+              # 容器内路径
+              mountPath: /etc/localtime
+            - name: config
+              mountPath: /etc/nginx/conf.d/
+            - name: logs
+              mountPath: /var/log/nginx/
+          # resources: 资源限制
+          resources:
+            # limits: 最大资源限制
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            # requests: 最小资源限制
+            ## requests 设置过大时，k8s 会预留资源，导致资源不能被其他 Pod 有效利用
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          # Probe: 探针
+          #
+          # 支持三种检查方式
+          #   exec: 执行 exec 命令，返回状态码是 0 为成功
+          #   httpGet: 发送 HTTP 请求，返回 200-400 范围状态码为成功
+          #   tcpSocket: 发起 TCP Socket 建立成功
+          #
+          # 探针类型
+          #   启动探针 (startupProbe):   如果在 (failureThreshold*periodSeconds) 时间内未成功启动， 将杀死容器，根据 Pod 的 restartPolicy 来操作
+          #   就绪探针 (readinessProbe): 就绪检查。如果检查失败，会把 Pod 从 service endpoints 中剔除（不接受 service 流量）。
+          #   存活探针 (livenessProbe):  如果检查失败，将杀死容器，根据 Pod 的 restartPolicy 来操作
+          # 注意：
+          #   就绪探针在容器整个生命周期中保持运行状态；
+          #   存活探针不等待就绪探针成功。若需要在存活探针之前等待，应使用 startupProbe 或 initialDelaySeconds
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
+            # periodSeconds: 执行探测的时间间隔。(default: 10)
+            periodSeconds: 10
+            # timeoutSeconds: 超时时间。(default: 1)
+            timeoutSeconds: 1
+            # successThreshold: 最小连续探测成功数。(default: 1)
+            # successThreshold: 1
+            # failureThreshold: 连续探测失败数。连续失败后，处罚重启策略
+            failureThreshold: 3
+            # initialDelaySeconds: Pod 启动后，延迟多少秒开始探测
+            initialDelaySeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+              scheme: HTTP
+            periodSeconds: 10
+            timeoutSeconds: 1
+            initialDelaySeconds: 30
+          securityContext:
+            # 容器以 root 用户(uid: 0)运行
+            runAsUser: 0
+      # volumes: 数据卷
+      volumes:
+        # hostPath
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+            # type: hostPath 属性
+            #   "": 默认配置。不进行检查
+            #   File: 预先存在的文件
+            #   Directory: 预先存在的路径
+            #   FileOrCreate: 文件不存在则创建(0644)。所有权属 kubelet
+            #   DirectoryOrCreate: 文件夹不存在则创建(0755)。所有权属 kubelet
+            type: ""
+        # configMap
+        - name: config
+          configMap:
+            name: nginx.conf
+        # persistentVolumeClaim
+        - name: logs
+          persistentVolumeClaim:
+            claimName: nginx-pvc
+        # persistentVolumeClaim
+        - name: logs2
+          persistentVolumeClaim:

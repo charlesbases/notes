@@ -1,0 +1,101 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-ssh
+  namespace: tekton-pipelines
+  annotations:
+    tekton.dev/git-0: 10.63.1.35:9222
+type: kubernetes.io/ssh-auth
+stringData:
+  ssh-privatekey: |
+    -----BEGIN OPENSSH PRIVATE KEY-----
+    b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcn
+    NhAAAAAwEAAQAAAQEApPzpFobpwT1zFzuNHwtmesQ5xduvzT/iQa1V5HEojY35jiM31uJy
+    sK1Y9VauxLlBQAtfYwEx5kDd6z4a9K7wHcvFjRBozVutn5cEI2vQ0XhH//+DZ/nshd7lax
+    wIISZjrYRjaIuzv5oGpak0D7Binn3DPFcdgZZmyJ88lLxXkgHbe69FfuiJxxpSwH+maEdt
+    nPHRHUDl/4DVB9INaUeu8hNOqI5xhMG9pZunvKTArOPZNz+YfiaejnQ/UYUAtEShuMf5De
+    40ZZAJRFqEmW+LApk93c7snEMGFgnbC+44+yBMsGa7m0B9KPImjoAvZhU+Q2n8/yfVpuaI
+    SoWC5/SgDQAAA8i2HF35thxd+QAAAAdzc2gtcnNhAAABAQCk/OkWhunBPXMXO40fC2Z6xD
+    nF26/NP+JBrVXkcSiNjfmOIzfW4nKwrVj1Vq7EuUFAC19jATHmQN3rPhr0rvAdy8WNEGjN
+    W62flwQja9DReEf//4Nn+eyF3uVrHAghJmOthGNoi7O/mgalqTQPsGKefcM8Vx2BlmbInz
+    yUvFeSAdt7r0V+6InHGlLAf6ZoR22c8dEdQOX/gNUH0g1pR67yE06ojnGEwb2lm6e8pMCs
+    49k3P5h+Jp6OdD9RhQC0RKG4x/kN7jRlkAlEWoSZb4sCmT3dzuycQwYWCdsL7jj7IEywZr
+    ubQH0o8iaOgC9mFT5Dafz/J9Wm5ohKhYLn9KANAAAAAwEAAQAAAQAjuMSIxZYn6jOYhKLF
+    5XR/QSwXDD0wjdPhj3OI3f0/RM2S+koVQvs9CJM5r1ZwroGTqcKxz2jr5wCFdfFlJ9lCQk
+    PYCoT+bYqWgp55Qtc3+zhvk3VyljihNYTrn2qdLtAnGgJh+NlmsyUcShnFCdYYZbdXQa9Y
+    RuWjK2L0+yBkspxBu6DJ6E2mfufuhkY1nKUjZRGZOsUfhY8ul37bFqxDJhMWeO0jrI/3Lq
+    C3CZg5219EJovLatNHUuoXvFIiCSdCzGelvMnqgEyR77JA2sQWe/GC2pRUMPVGWSy4an5Q
+    NqxM9mUwSLS1tUxWUrEp1IBW6NaE48tgW4ejhKr6NwurAAAAgQCGBDTuDgIl53kKWcuaJg
+    mueRrjFLgkp/qCkcClXKeFOyCfU7vgTb30HOI+IgSLE0WY++ioq8emWHQap3Ou/17ogMfD
+    /Rq9pijgXLtodbdxvy02Pq4XF4UFMK4giARDV6zgXEbLxtFyAvPSz4xyezdzZMVPSDrxTu
+    TI4pp26OXzWAAAAIEAzcAzK8cNO6hi6UH6QjeMTGmkFoQbYnW9B+b3VoEKXKy0YgS6ccdF
+    Ee+PnIi3m8hzKeF+vTO0DdFNQIs/DTCF+8u5YIQB2yl/BQLHgwIDLOSF7TR5AKmYDOyj4r
+    D/KsFthnQ6dqFXgsaIgA42eaDO1XnGBwHyPwIy6f0J6QbwqWsAAACBAM1IKl89kdR/LKNa
+    xvDjnXukSzry/JI+6EcM1YdLS8HcZjMp0njzQ91SI/f6BDuEa+bUix73FaXoa+ETUjHcEh
+    7wt2lGxh2oBeI8ERhLutTKPrkZMPzGmKcaeEpAxQ9QK1YkBVVIUgQOZKuM8YqbG+sjoNmb
+    Ds/8TcrKyyoKsOJnAAAAC3poaW1pbmcuc3VuAQIDBAUGBw==
+    -----END OPENSSH PRIVATE KEY-----
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dockerconfig
+  namespace: tekton-pipelines
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: ewoJImF1dGhzIjogewoJCSIxMC42NC4xMC4yMTA6MTAwODMiOiB7CgkJCSJhdXRoIjogIlkyRnlZbTl1WkRwamFHVjVkVzR6TWpFaCIKCQl9Cgl9Cn0=
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: devops
+  namespace: tekton-pipelines
+secrets:
+  - name: gitlab-ssh
+  - name: dockerconfig
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: gopath
+  namespace: tekton-pipelines
+spec:
+  volumeMode: Filesystem
+  storageClassName: storageclass
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Ti
+
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: environment
+  namespace: tekton-pipelines
+data:
+  GOOS: 'linux'
+  GOARCH: 'amd64'
+  CGO_ENABLED: '0'
+  GO111MODULE: 'on'
+  GOPATH: '/go'
+  GOPROXY: 'http://10.61.130.5:8081/nexus/repository/proxy-goproxy/,direct'
+
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: taskhub-backend
+  namespace: tekton-pipelines
+spec:
+  params:
+    - name: url
+      value: 'ssh://git@10.63.1.35:9222/zhiming.sun/taskhub.git'
+    - name: revision
+      value: 'develop' # branch or tag or commit hash
+  type: git

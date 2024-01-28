@@ -1,0 +1,74 @@
+---
+kind: ConfigMap
+apiVersion: apps/v1
+metadata:
+  name: nginx
+  namespace: app
+data:
+  # filename: | filedata
+  nginx1.conf: |
+    server {
+      ...
+    }
+  nginx2.conf: |
+    server {
+      ...
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx
+  name: nginx
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - image: 'nginx:alpine'
+          imagePullPolicy: IfNotPresent
+          name: nginx
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /etc/localtime
+              name: localtime
+              # 将 configmap.nginx 中的 data 文件全部挂载到 '/etc/nginx/conf.d/'
+              # 注意: 这将清空容器内原文件夹下的所有文件, 并将 configmap 文件挂载进去
+            - mountPath: /etc/nginx/conf.d/
+              name: nginx
+              # 指定文件挂载. 将 configmap 文件指定挂载到容器内
+            - mountPath: /etc/nginx/conf.d/nginx1.conf
+              name: nginx
+              subPath: nginx1.conf
+            - mountPath: /etc/nginx/conf.d/nginx1.conf
+              name: nginx
+              subPath: nginx1.conf
+      restartPolicy: Always
+      volumes:
+        - hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+            type: ""
+          name: localtime
+        - configMap:
+            defaultMode: 420
+            name: nginx
+          name: nginx

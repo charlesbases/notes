@@ -1,0 +1,167 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: openldap
+  namespace: openldap
+  labels:
+    app: openldap
+  annotations:
+    kubesphere.io/description: 认证中心
+spec:
+  ports:
+  - name: ldap
+    protocol: TCP
+    port: 1389
+    targetPort: 1389
+  - name: ldaps
+    protocol: TCP
+    port: 1636
+    targetPort: 1636
+  - name: manager
+    protocol: TCP
+    port: 80
+    targetPort: 80
+  selector:
+    app: openldap
+  type: ClusterIP
+
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: openldap
+  namespace: openldap
+  annotations:
+    kubesphere.io/description: 认证中心
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: openldap.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: openldap
+            port:
+              number: 80
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: openldap
+  namespace: openldap
+  labels:
+    app: openldap
+  annotations:
+    kubesphere.io/description: 认证中心
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openldap
+  template:
+    metadata:
+      labels:
+        app: openldap
+    spec:
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
+      containers:
+      - name: openldap
+        image: 10.64.10.210:10083/bitnami/openldap:2.5.14
+        ports:
+        - name: ldap
+          protocol: TCP
+          containerPort: 1389
+        - name: ldaps
+          protocol: TCP
+          containerPort: 1636
+        env:
+        - name: LDAP_ROOT
+          value: 'dc=openldap,dc=com'
+        - name: LDAP_ADMIN_USERNAME
+          value: 'admin'
+        - name: LDAP_ADMIN_PASSWORD
+          value: 'admin'
+        - name: LDAP_USERS
+          value: 'default'
+        - name: LDAP_PASSWORDS
+          value: 'default'
+        resources:
+          limits:
+            cpu: '0.5'
+            memory: 512Mi
+          requests:
+            cpu: '0.2'
+            memory: 256Mi
+        volumeMounts:
+        - name: localtime
+          mountPath: /etc/localtime
+        - name: data
+          mountPath: /bitnami/openldap
+        imagePullPolicy: IfNotPresent
+      - name: manager
+        image: 10.64.10.210:10083/ldapaccountmanager/lam:8.3
+        ports:
+        - name: tcp
+          protocol: TCP
+          containerPort: 80
+        env:
+        - name: LDAP_SKIP_PRECONFIGURE
+          value: 'true'
+        - name: LDAP_SERVER
+          value: 'ldap://localhost:1389'
+        - name: LDAP_DOMAIN
+          value: 'openldap.com'
+        - name: LDAP_USER
+          value: 'cn=admin,dc=openldap,dc=com'
+        - name: LAM_LANG
+          value: 'zh_CN'
+        - name: LAM_PASSWORD
+          value: 'lam'
+        resources:
+          limits:
+            cpu: '0.2'
+            memory: 256Mi
+          requests:
+            cpu: '0.1'
+            memory: 128Mi
+        volumeMounts:
+        - name: localtime
+          mountPath: /etc/localtime
+        - name: config
+          mountPath: /var/lib/ldap-account-manager/config
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+  volumeClaimTemplates:
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 64Gi
+      storageClassName: juicefs-sc
+      volumeMode: Filesystem
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: config
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 8Gi
+      storageClassName: juicefs-sc
+      volumeMode: Filesystem
+  serviceName: openldap

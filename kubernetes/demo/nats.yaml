@@ -1,0 +1,193 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nats
+  namespace: app
+data:
+  nats.conf: |
+    http: 8222
+    server_name: $POD_NAME
+    
+    debug: false
+    trace: false
+    
+    log_file: "/data/nats/nats.log"
+    
+    pid_file: "/var/run/nats/nats.pid"
+
+    max_connections: 1024
+    max_control_line: 1024
+    max_payload: 65536
+
+    cluster {
+      name: nats
+      port: 6222
+
+      routes [
+        nats://nats-0.nats.app.svc:6222
+        nats://nats-1.nats.app.svc:6222
+        nats://nats-2.nats.app.svc:6222
+      ]
+
+      cluster_advertise: $CLUSTER_ADVERTISE
+      connect_retries: 30
+    }
+    
+    jetstream {
+      store_dir:  /data/nats
+      max_mem:  1Gi
+      max_file: 128Gi
+    }
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nats
+  namespace: app
+  labels:
+    app: nats
+spec:
+  ports:
+    - name: cluster
+      protocol: TCP
+      port: 6222
+      targetPort: 6222
+    - name: metrics
+      protocol: TCP
+      port: 7777
+      targetPort: 7777
+  selector:
+    app: nats
+  type: ClusterIP
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: nats
+  namespace: app
+  labels:
+    app: nats
+spec:
+  serviceName: nats
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nats
+  template:
+    metadata:
+      labels:
+        app: nats
+    spec:
+      hostname: nats
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - nats
+              topologyKey: "kubernetes.io/hostname"
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+        - name: config
+          configMap:
+            name: nats
+            defaultMode: 420
+        - name: pid
+          emptyDir: { }
+      containers:
+        - name: nats
+          image: '10.64.10.210:10083/nats:2.10-alpine'
+          workingDir: '/data/nats'
+          command:
+            - nats-server
+            - '--config'
+            - /etc/nats/nats.conf
+          ports:
+            - name: cluster
+              containerPort: 6222
+              protocol: TCP
+            - name: monitor
+              containerPort: 8222
+              protocol: TCP
+            - name: metrics
+              containerPort: 7777
+              protocol: TCP
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: CLUSTER_ADVERTISE
+              value: $(POD_NAME).nats.$(POD_NAMESPACE).svc
+          resources:
+            limits:
+              cpu: '2'
+              memory: 4Gi
+            requests:
+              cpu: '1'
+              memory: 2Gi
+          volumeMounts:
+            - name: localtime
+              mountPath: /etc/localtime
+            - name: config
+              mountPath: /etc/nats
+            - name: data
+              mountPath: /data/nats
+            - name: pid
+              mountPath: /var/run/nats
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8222
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8222
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          lifecycle:
+            # nats 终止时，优雅的断开客户端连接
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - '-c'
+                  - /nats-server -sl=ldm=/var/run/nats/nats.pid && /bin/sleep 60
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+  volumeClaimTemplates:
+    - kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 128Gi
+#        storageClassName: juicefs-sc-new
+        volumeMode: Filesystem

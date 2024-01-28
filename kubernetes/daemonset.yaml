@@ -1,0 +1,9 @@
+---
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: elk-filebeat
+  namespace: map
+  labels:
+    name: elk-filebeat
+...

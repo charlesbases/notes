@@ -1,0 +1,167 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: prometheus
+    prometheus: k8s
+    role: alert-rules
+  name: prometheus-custom-rules
+  namespace: monitoring
+spec:
+  groups:
+  - name: custom
+    rules:
+    - alert: NodeNotReady
+      annotations:
+        summary: '{{ $labels.node }}: Node is not ready.'
+        description: '{{ $labels.node }}: Node is not ready.'
+      expr: |
+        kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"} == 0
+      for: 15m
+      labels:
+        severity: warning
+    - alert: NodeUnreachable
+      annotations:
+        summary: '{{ $labels.node }}: Node is unreachable.'
+        description: '{{ $labels.node }}: Node is unreachable.'
+      expr: |
+        (kube_node_spec_taint{job="kube-state-metrics",key="node.kubernetes.io/unreachable",effect="NoSchedule"} unless ignoring(key,value) kube_node_spec_taint{job="kube-state-metrics",key=~"ToBeDeletedByClusterAutoscaler|cloud.google.com/impending-node-termination|aws-node-termination-handler/spot-itn"}) == 1
+      for: 15m
+      labels:
+        severity: warning
+    - alert: NodeCPUOvercommit
+      annotations:
+        summary: '{{ $labels.instance }}: CPU usage has exceeded {{ $value }}%.'
+        description: '{{ $labels.instance }}: CPU usage has exceeded {{ $value }}%.'
+      expr: |
+        90 > floor((1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100) >= 75
+      for: 15m
+      labels:
+        severity: warning
+    - alert: NodeCPUOvercommit
+      annotations:
+        summary: '{{ $labels.instance }}: CPU usage has exceeded {{ $value }}%.'
+        description: '{{ $labels.instance }}: CPU usage has exceeded {{ $value }}%.'
+      expr: |
+        floor((1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100) >= 90
+      for: 15m
+      labels:
+        severity: critical
+    - alert: NodeMemoryOvercommit
+      annotations:
+        summary: '{{ $labels.instance }}: Memory usage has exceeded {{ $value }}%.'
+        description: '{{ $labels.instance }}: Memory usage has exceeded {{ $value }}%.'
+      expr: |
+        90 > floor((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100) >= 75
+      for: 15m
+      labels:
+        severity: warning
+    - alert: NodeMemoryOvercommit
+      annotations:
+        summary: '{{ $labels.instance }}: Memory usage has exceeded {{ $value }}%.'
+        description: '{{ $labels.instance }}: Memory usage has exceeded {{ $value }}%.'
+      expr: |
+        floor((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100) >= 90
+      for: 15m
+      labels:
+        severity: critical
+    - alert: NodeDiskOvercommit
+      annotations:
+        summary: '{{ $labels.instance }}: Disk ["{{ $labels.mountpoint }}"] usage is detected to be over {{ $value }}%.'
+        description: '{{ $labels.instance }}: Disk ["{{ $labels.mountpoint }}"] usage is detected to be over {{ $value }}%.'
+      expr: |
+        90
+          >
+        floor(
+          (node_filesystem_size_bytes{fstype =~ "xfs|ext4"} - node_filesystem_avail_bytes)
+            /
+          node_filesystem_size_bytes
+            *
+          100
+        )
+          >=
+        75
+      for: 15m
+      labels:
+        severity: warning
+    - alert: NodeDiskOvercommit
+      annotations:
+        summary: '{{ $labels.instance }}: Disk ["{{ $labels.mountpoint }}"] usage is detected to be over {{ $value }}%.'
+        description: '{{ $labels.instance }}: Disk ["{{ $labels.mountpoint }}"] usage is detected to be over {{ $value }}%.'
+      expr: |
+        floor(
+          (node_filesystem_size_bytes{fstype =~ "xfs|ext4"} - node_filesystem_avail_bytes)
+            /
+          node_filesystem_size_bytes
+            *
+          100
+        )
+          >=
+        90
+      for: 15m
+      labels:
+        severity: critical
+    - alert: PodCPUOvercommit
+      annotations:
+        summary: '{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}: CPU usage has over [{{ $value }}]% of the limit.'
+        description: '{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}: CPU usage has over [{{ $value }}]% of the limit.'
+      expr: |
+        90
+          >
+        floor(
+          sum(rate(container_cpu_usage_seconds_total{namespace!="kube-system", container!="", container!="POD"}[1m])) by (namespace, pod, container)
+            /
+          on (namespace, pod, container) kube_pod_container_resource_limits{resource="cpu"}
+            *
+          100
+        )
+          >=
+        75
+      for: 5m
+      labels:
+        severity: warning
+    - alert: PodCPUOvercommit
+      annotations:
+        summary: '{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}: CPU usage has over [{{ $value }}]% of the limit.'
+        description: '{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}: CPU usage has over [{{ $value }}]% of the limit.'
+      expr: |
+        floor(
+          sum(rate(container_cpu_usage_seconds_total{namespace!="kube-system", container!="", container!="POD"}[1m])) by (namespace, pod, container)
+            /
+          on (namespace, pod, container) kube_pod_container_resource_limits{resource="cpu"}
+            *
+          100
+        )
+          >=
+        90
+      for: 5m
+      labels:
+        severity: critical
+    - alert: PodMemoryOvercommit
+      annotations:
+        summary: '{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}: Memory usage has over [{{ $value }}]% of the limit.'
+        description: '{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}: Memory usage has over [{{ $value }}]% of the limit.'
+      expr: |
+        90 > floor(container_memory_usage_bytes{namespace!="kube-system"} / (container_spec_memory_limit_bytes != 0) * 100) >= 75
+      for: 5m
+      labels:
+        severity: warning
+    - alert: PodMemoryOvercommit
+      annotations:
+        summary: '{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}: Memory usage has over [{{ $value }}]% of the limit.'
+        description: '{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}: Memory usage has over [{{ $value }}]% of the limit.'
+      expr: |
+        floor(container_memory_usage_bytes{namespace!="kube-system"} / (container_spec_memory_limit_bytes != 0) * 100) >= 90
+      for: 5m
+      labels:
+        severity: critical
+    - alert: JobFailed
+      annotations:
+        summary: '{{ $labels.namespace }}/{{ $labels.job_name }} failed to complete.'
+        description: '{{ $labels.namespace }}/{{ $labels.job_name }} failed to complete.'
+      expr: |
+        kube_job_failed{job="kube-state-metrics"}  > 0
+      for: 5m
+      labels:
+        severity: warning

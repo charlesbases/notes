@@ -1,0 +1,37 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: backend
+  namespace: tekton-pipelines
+  labels:
+    app: backend
+spec:
+  params:
+    - name: repository
+      type: string
+      default: "10.64.10.210:10083"
+    - name: alpine
+      type: string
+      default: "alpine:3.15.4"
+    - name: tag
+      type: string
+      default: "latest"
+  resources:
+    - name: backend
+      type: git
+  tasks:
+    - name: backend
+      taskRef:
+        name: backend
+      params:
+        - name: repository
+          value: "$(params.repository)"
+        - name: alpine
+          value: "$(params.alpine)"
+        - name: tag
+          value: "$(params.tag)"
+      resources:
+        inputs:
+          - name: backend
+            resource: backend

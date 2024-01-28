@@ -1,0 +1,66 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: backend
+  namespace: tekton-pipelines
+  labels:
+    app: backend
+spec:
+  params:
+    - name: repository
+      type: string
+    - name: alpine
+      type: string
+    - name: tag
+      type: string
+  resources:
+    inputs:
+      - name: backend
+        type: git
+  steps:
+    - name: go-build
+      image: '10.64.10.210:10083/golang:1.20'
+      workingDir: /workspace/backend/backend
+      envFrom:
+        - configMapRef:
+            name: environment
+      command:
+        - go
+      args:
+        - build
+        - -o
+        - main
+        - .
+      volumeMounts:
+        - name: localtime
+          mountPath: /etc/localtime
+        - name: gopath
+          mountPath: /go
+    - name: docker-build
+      image: '10.64.10.210:10083/docker:git'
+      workingDir: /workspace/backend
+      command:
+        - docker
+      args:
+        - build
+        - --network=host
+        - --build-arg
+        - REGISTRY="$(params.repository)"
+        - --build-arg
+        - ALPINE_TAG="$(params.alpine)"
+        - -f
+        - ./ci/srv/Dockerfile
+        - --tag
+        - 'task_hub_srv:$(params.tag)'
+        - .
+      volumeMounts:
+        - name: localtime
+          mountPath: /etc/localtime
+  volumes:
+    - name: localtime
+      hostPath:
+        path: /usr/share/zoneinfo/Asia/Shanghai
+    - name: gopath
+      persistentVolumeClaim:
+        claimName: gopath

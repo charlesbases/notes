@@ -1,0 +1,53 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: backend_nodeport
+  namespace: app
+  labels:
+    app: backend
+    version: v1.0.0
+spec:
+  # type: 资源类型
+  #   NodePort: 外部访问使用
+  #   ClusterIP: 集群内部使用
+  #   LoadBalancer: 外部访问使用、公有云
+  type: NodePort
+  selector:
+    app: backend
+    version: v1.0
+  ports:
+    - name: http
+      # port: 集群内部访问端口
+      port: 8080
+      # nodePort: 集群外部访问端口
+      nodePort: 36080
+      # targetPort: Pod 容器内暴露端口
+      targetPort: 8080
+      protocol: TCP
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: backend_clusterip
+  namespace: app
+  labels:
+    app: backend
+    version: v1.0.0
+spec:
+  # type: 资源类型
+  #   NodePort: 外部访问使用
+  #   ClusterIP: 集群内部使用
+  #   LoadBalancer: 外部访问使用、公有云
+  type: ClusterIP
+  selector:
+    app: backend
+    version: v1.0
+  ports:
+    - name: http
+      # port: 集群内部访问端口
+      port: 8080
+      # targetPort: Pod 容器内暴露端口
+      targetPort: 8080
+      protocol: TCP

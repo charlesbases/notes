@@ -1,0 +1,49 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: argocd-cluster-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cluster-cm
+    app.kubernetes.io/part-of: argocd
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard
+  namespace: tekton-pipelines
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: tekton.devops.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tekton-dashboard
+                port:
+                  number: 9097
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard
+  namespace: argocd
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: argocd.devops.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 80

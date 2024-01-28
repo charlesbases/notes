@@ -1,0 +1,101 @@
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mysql-pv
+  namespace: app
+spec:
+  # volumeMode: 存储卷模式
+  volumeMode: Filesystem
+  # storageClassName: 存储类别。pvc 通过相同的 storageClassName 进行绑定
+  storageClassName: storage-local
+  # persistentVolumeReclaimPolicy: 回收策略。即 pvc 释放卷时，pv 清理数据卷的方式。
+  # pvc 释放卷是当用户删除一个 pvc 时，该 pvc 绑定的 pv 就会被释放。
+  # Retain: 不自动清理，保留 volume
+  # Recycle：删除数据。即 `rm -rf /volume/*`。仅 NFS、HostPath 支持
+  # Delete：删除存储资源。比如删除 AWS EBS 卷。仅 AWS EBS, GCE PD, Azure Disk 和 Cinder 支持
+  persistentVolumeReclaimPolicy: Retain
+  # capacity存储能力
+  capacity:
+    storage: 1Ti
+  # accessModes: 访问模式
+  # ReadOnlyMany: 可读，可多个节点挂载
+  # ReadWriteOnce: 可读可写，但只支持单个节点挂载
+  # ReadWriteMany: 可读可写，支持多个节点挂载
+  accessModes:
+    - ReadWriteOnce
+  # hostPath: 宿主机目录
+  hostPath:
+    # 节点路径
+    path: /data/mysql
+    type: ""
+  # nodeAffinity: 节点亲和
+  nodeAffinity:
+    # required: 硬亲和性。约束条件必须满足
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - operator: In
+              key: kubernetes.io/hostname
+              values:
+                - kube-node-1
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs-pvc-mysql
+  namespace: app
+spec:
+  volumeMode: Filesystem
+  storageClassName: storage-local
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 512Mi
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+spec:
+  template:
+    spec:
+      containers:
+        - name: app
+          # ...
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          # ...
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: app-pvc
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+spec:
+template:
+  spec:
+    containers:
+      - name: app
+        # ...
+        volumeMounts:
+          - name: data
+            mountPath: /data
+        # ...
+  volumeClaimTemplates:
+    - kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
+        storageClassName: local-storage
+        volumeMode: Filesystem
