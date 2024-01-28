@@ -1,0 +1,44 @@
+[user]
+    name = zhiming.sun
+    email = zhiming.sun@qq.com
+
+[pull]
+    rebase = true
+
+[push]
+    default = current
+
+[core]
+    editor = vim
+    autocrlf = input
+  	compression = 0
+    excludesfile = ~/.gitignore
+
+[color]
+    ui = auto
+
+[color.branch]
+    current = blue
+    local   = green
+    remote  = red
+
+[color.status]
+    added     = green
+    changed   = blue
+    untracked = red
+
+[http]
+    postBuffer = 128m
+    sslVerify  = false
+
+[alias]
+    logs = log --graph --abbrev-commit --decorate --oneline --date=format:'%Y-%m-%d %H:%M:%S' --format=format:'%>>|(10,trunc)% %C(bold red)%h%Creset %C(cyan)%ad%Creset %C(green)[%<(9)%ar]%Creset  %C(dim white)%an%Creset %C(yellow)%d%Creset%n %>>|(9.5)% %C(white)%s%Creset ' --all
+    trace = update-index --assume-unchanged
+    untrace = update-index --no-assume-unchanged
+
+[branch]
+    autosetuprebase = always
+
+[credential]
+    helper = store
+    # helper = osxkeychain # mac
