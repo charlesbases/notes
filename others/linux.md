@@ -762,7 +762,18 @@ grep -nr 'sync.Once' "$(dirname $(which go))/../src" | wc -l
   # https://www.google.com
   ```
 
-### 3. sort
+### 6. head
+
+```shell
+# 默认显示文件前十行
+head [options] <file>
+
+# options
+# -n: 指定要显示的行数. eg: head -n 10 <file>
+# -c: 指定以字节为单位显示的字节数. eg: head -c 100 <file>
+```
+
+### 7. sort
 
 ```shell
 # 按 ASCII 正序
@@ -775,7 +786,18 @@ echo "a c b" | tr ' ' '\n' | sort -r
 echo "a bbb cc ddd" | tr ' ' '\n' | awk '{print length($1), $1}' | sort
 ```
 
-### 4. uniq
+### 8. tail
+
+```shell
+# 默认显示后十行
+tail [options] <file>
+
+# options
+# -n: 指定要显示的行数. eg: tail -n 10 <file>
+# -c: 指定以字节为单位显示的字节数. eg: tail -c 100 <file>
+```
+
+### 9. uniq
 
 ```shell
 # uniq 只能去除相邻字符串的重复，所以需要先使用 `sort` 进行排序
