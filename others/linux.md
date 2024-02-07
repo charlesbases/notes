@@ -1,3 +1,33 @@
+
+
+## df
+
+```shell
+# Disk Free
+
+# 显示文件系统磁盘空间利用情况
+df -h
+```
+
+---
+
+## du
+
+```shell
+# Dish Usage
+
+# 显示当前文件夹总大小
+du -sh
+
+# 显示子文件夹大小
+du -h --max-depth=1
+
+# -s: 显示总计大小
+# -h: 以 MB、MB、GB 的格式显示
+```
+
+---
+
 ## if
 
 ```shell
@@ -66,22 +96,22 @@ fi
 
   ```shell
   apt install nfs-common -y
-
+  
   # 创建 nfs 共享目录
   sudo mkdir -p /data/nfs
-
+  
   # 连接 nfs 服务器
   cat >> /etc/fstab << EOF
   # nfs-server
   192.168.1.10:/data/nfs /data/nfs nfs4 defaults,user,exec 0 0
   EOF
-
+  
   #
   sudo mount -a
-
+  
   # 启动服务
   sudo sh -c 'systemctl enable rpcbind && systemctl start rpcbind'
-
+  
   # 查看
   df -h
   ```
@@ -130,7 +160,7 @@ EOF
     IdentityFile ~/.ssh/is_rsa
     PreferredAuthentications publickey
   EOF
-
+  
   ## 正则匹配
   cat > $HOME/.ssh/config << EOF
   Host 192.168.0.*
@@ -299,7 +329,7 @@ find -name .git -prune -o -name .idea -prune -o -type f -print
   ```shell
   # shell 中管道 '|' 会创建子 shell，导致变量作用域改变
   # 若要在 `while read` 循环中，修改外部变量
-
+  
   # 1. here-string
   index=0
   while read line; do
@@ -363,13 +393,13 @@ find -name .git -prune -o -name .idea -prune -o -type f -print
       ;;
     esac
   done
-
+  
   # 该命令可以识别 '-a -b -c' 选项。其中 '-a' 需要设置 value，'-b -c' 不需要 value
   # getopts 每次调用时，会将下一个 'opt' 放置在变量中，$OPTARG 可以从 '$*' 中拿到参数值。$OPTARG 是内置变量
   # 第一个 ':' 表示忽略错误
   # a: 表示该 'opt' 需要 value
   # b  表示该 'opt' 不需要 value
-
+  
   # 去除 options 之后的参数, 可以在后面的 shell 中进行参数处理
   shift $(($OPTIND - 1))
   echo $1
@@ -461,11 +491,11 @@ cat demo.txt | awk 'END {print NR}'
 ```shell
 # RS
 # awk 读取文件时的行分隔符
-echo '1,2,3' | awk '{print $1}'
+echo '1,2,3' | awk '{print}'
 ···
 1,2,3
 ···
-echo '1,2,3' | awk -v RS="," '{print $1}'
+echo '1,2,3' | awk -v RS="," '{print}'
 ···
 1
 2
@@ -474,13 +504,13 @@ echo '1,2,3' | awk -v RS="," '{print $1}'
 
 # ORS
 # awk 输出时的行结束符
-seq 3 | awk '{print $1}'
+seq 3 | awk '{print}'
 ···
 1
 2
 3
 ···
-seq 3 | awk -v ORS="," '{print $1}'
+seq 3 | awk -v ORS="," '{print}'
 ···
 1,2,3,
 ···
@@ -756,7 +786,7 @@ grep -nr 'sync.Once' "$(dirname $(which go))/../src" | wc -l
   # "id":1
   # "id":12
   # "id":123
-
+  
   # 'fmt.Println("https://www.google.com")'
   grep -o 'https://[^"]*'
   # https://www.google.com
@@ -982,7 +1012,7 @@ sudo userdel -r user
   ```shell
   # 修改当前用户密码
   sudo passwd
-
+  
   # 修改其他用户密码
   sudo passwd sun
   ```
@@ -1171,17 +1201,17 @@ EOF
   .:53 {
     hosts {
       192.168.1.1 coredns.com
-
+  
       ttl 5
       fallthrough
     }
-
+  
     # 未匹配的域名转发到上游 DNS 服务器
     forward . 192.168.1.1
-
+  
     errors
     log stdout
-
+  
     cache 60
     reload 3s
   }
@@ -1204,21 +1234,21 @@ EOF
     ```shell
     # 备份
     sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-
+    
     ···
     # cqu
     http://mirrors.cqu.edu.cn
-
+    
     # ustc
     http://mirrors.ustc.edu.cn
-
+    
     # aliyun
     http://mirrors.aliyun.com
-
+    
     # tsinghua
     http://mirrors.tuna.tsinghua.edu.cn
     ···
-
+    
     ··· Debian 11
     deb http://mirrors.aliyun.com/debian/ bullseye main
     # deb-src http://mirrors.aliyun.com/debian/ bullseye main
@@ -1229,7 +1259,7 @@ EOF
     deb http://mirrors.aliyun.com/debian-security bullseye-security main
     # deb-src http://mirrors.aliyun.com/debian-security bullseye-security main
     ···
-
+    
     apt update -y
     ```
 
@@ -1272,17 +1302,17 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
     done
     unset i
   fi
-
+  
   # export
   set completion-ignore-case on
   export TERM=xterm-256color
   export TIME_STYLE="+%Y-%m-%d %H:%M:%S"
-
+  
   # alias
   alias l="ls -lh"
   alias la="ls -Alh"
   alias his="history -i"
-
+  
   EOF
   ```
 
@@ -1297,22 +1327,22 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
   ```shell
   # 完整版
   # 模拟 HTTPS 厂商生产 HTTPS 证书过程，HTTPS 证书厂商一般都会有一个根证书（3、4、5），实际申请中，该操作用户不可见。通常用户只需将服务器公钥与服务器证书申请文件交给 HTTPS 厂商即可，之后 HTTPS 厂商会邮件回复一个服务器公钥证书，拿到这个服务器公钥证书与自生成的服务器私钥就可搭建 HTTPS 服务
-
+  
   # 1. 生成服务器私钥
   openssl genrsa -out server.key 2048
-
+  
   # 2. 生成服务器证书申请文件
   openssl req -new -key server.key -out server.csr
-
+  
   # 3. 生成 CA 机构私钥
   openssl genrsa -out ca.key 2048
-
+  
   # 4. 生成 CA 机构证书请求文件
   openssl req -new -key ca.key -out ca.csr
-
+  
   # 5. 生成 CA 机构根证书（自签名证书）
   openssl x509 req -signkey ca.key -in ca.csr -out ca.crt
-
+  
   # 6. 生成服务器证书（公钥证书）
   openssl x509 -req -CA ca.crt -CAkey ca.key -CAcreateserial -in server.csr -out server.crt
   ```
@@ -1561,7 +1591,7 @@ firewall-cmd --zone=public --list-ports
   ```shell
   # cpu 核心数
   nproc
-
+  
   # cpu 详细信息
   lscpu
   ```
@@ -1591,7 +1621,7 @@ firewall-cmd --zone=public --list-ports
 - ##### windows
 
   ```shell
-
+  
   ```
 
 ---
@@ -1625,6 +1655,6 @@ firewall-cmd --zone=public --list-ports
   cat >> $HOME/.zshrc << EOF
   alias d="$HOME/.scripts/docker-cleaner.sh"
   EOF
-
+  
   source $HOME/.zshrc
   ```

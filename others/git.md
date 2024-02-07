@@ -18,10 +18,10 @@
   ```shell
   # 删除本地
   git tag -d v1.0.0
-
+  
   # 删除远程
   git push origin :refs/tags/v1.0.0
-
+  
   #
   v=v1.0.0; git tag -d $v && git push origin :refs/tags/$v
   ```
@@ -63,10 +63,10 @@ git branch --set-upstream-to=<remote-branch> <local-branch>
   ```shell
   # 本地分支
   git branch -d branch
-
+  
   # 远程分支
   git push origin -d branch
-
+  
   #
   b=branch; git push origin --delete $b && git branch -d $b
   ```
@@ -92,13 +92,13 @@ git branch --set-upstream-to=<remote-branch> <local-branch>
   ```shell
   # 删除 git 缓存
   git rm --cached [module]
-
+  
   # 删除 .gitmodules 子模块信息
   [submodule "module"]
-
+  
   # 删除 .git/config 子模块信息
   [submodule "module"]
-
+  
   # 删除 .git 子模块文件
   rm -rf .git/modules/[model]
   ```
@@ -193,7 +193,7 @@ rm -rf ~/AppData/Local/Temp/* &>/dev/null
 
 ```shell
 # 下载 github 项目文件
-wget -O - https://raw.githubusercontent/<user>/<repo>/<branch>/<filepath> > <file>
+wget -O - https://raw.githubusercontent.com/<user>/<repo>/<branch>/<filepath> > <file>
 ```
 
 ## ——————

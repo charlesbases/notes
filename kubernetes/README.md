@@ -86,7 +86,7 @@
   ```shell
   # debain 使用 ntpd
   # sudo apt install -y ntp
-
+  
   # centos 使用 ntpdate
   # sudo yum install -y ntp
   ```
@@ -104,7 +104,7 @@
   ## netdate 系统时间
   sudo sh -c "apt install ntp -y && ntpd time.windows.com && timedatectl set-timezone 'Asia/Shanghai'"
   # sudo sh -c "yum install ntpdate -y && ntpdate time.windows.com && timedatectl set-timezone 'Asia/Shanghai'"
-
+  
   ## hwclock 硬件时间
   sudo hwclock -w
   ```
@@ -158,19 +158,19 @@
 
   ```shell
   # http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/Packages/
-
+  
   # kubeadm-1.23.16-0.x86_64.rpm
   # kubelet-1.23.16-0.x86_64.rpm
   # kubectl-1.23.16-0.x86_64.rpm
   # cri-tools-1.26.0-0.x86_64.rpm
   # kubernetes-cni-1.2.0-0.x86_64.rpm
-
+  
   # 安装 rpm 包
   rpm -ivh *.rpm --nodeps --force
-
+  
   # 安装依赖
   sudo apt install -y socat conntrack
-
+  
   # 开机启动
   sudo sh -c "systemctl enable kubelet.service && systemctl start kubelet.service"
   ```
@@ -217,42 +217,48 @@ cat kubernetes_v1.21.11.repo | while read line; do docker pull $line && docker t
 - #### master
 
   ```shell
+  # --apiserver-advertise-address: 指定 Kubernetes API 服务器向外部公开的 IP 地址或主机名参数。(推荐使用 Kubernetes Master IP)
+  # --service-cidr: 指定 Kuberentes 集群中 Service 的 IP 地址范围
+  # --pod-network-cidr: 指定 Kubernetes 集群中 Pod 的 IP 地址范围
+  ```
+
+  ```shell
   ip=192.168.1.10
   version=1.23.9
-
+  
   # kubeadm init (k8s.gcr.io)
-  # sudo kubeadm init --apiserver-advertise-address $ip --kubernetes-version $version --service-cidr=10.96.0.0/12  --pod-network-cidr=192.168.0.0/16 --pod-network-cidr=192.168.0.0/16
-
+  # sudo kubeadm init --apiserver-advertise-address $ip --kubernetes-version $version --service-cidr=192.168.0.0/16  --pod-network-cidr=10.0.0.0/16
+  
   # kubeadm init (repository)
   # 注意：使用指定镜像源时，将替换默认镜像源前缀 (k8s.gcr.io)，镜像推送时需修改镜像路径
   # repository=repository.aliyuncs.com/google_containers
   repository="10.64.10.210:10083/k8s.gcr.io"
-  sudo kubeadm init --apiserver-advertise-address $ip --image-repository $repository --kubernetes-version $version --service-cidr=10.96.0.0/12  --pod-network-cidr=192.168.0.0/16
-
+  sudo kubeadm init --apiserver-advertise-address $ip --image-repository $repository --kubernetes-version $version --service-cidr=192.168.0.0/16  --pod-network-cidr=10.0.0.0/16
+  
   # 创建 master 账户
   rm -rf $HOME/.kube && mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
+  
   # 安装网络插件
   kubectl apply -f cni-calico.yaml
-
+  
   # 修改 "--bind-address"
   ## kube-scheduler
   sudo sh -c "sed -s -i 's/--bind-address=127.0.0.1/--bind-address=0.0.0.0/g' /etc/kubernetes/manifests/kube-scheduler.yaml"
   ## kube-controller-manager
   sudo sh -c "sed -s -i 's/--bind-address=127.0.0.1/--bind-address=0.0.0.0/g' /etc/kubernetes/manifests/kube-controller-manager.yaml"
-
+  
   # token
   kubeadm token create --print-join-command
   # token(不过期)
   kubeadm token create --print-join-command --ttl 0
-
+  
   # [node] kubeadm join ...
-
+  
   # 验证
   kubectl get nodes
-
+  
   # metrics (5.3. metrics)
   ```
 
@@ -261,7 +267,7 @@ cat kubernetes_v1.21.11.repo | while read line; do docker pull $line && docker t
   ```shell
   # 重新加入
   # sudo sh -c "systemctl stop kubelet.service && rm -rf /etc/kubernetes/{kubelet.conf,pki/ca.crt}"
-
+  
   # join
   # sudo kubeadm join ...
   ```
@@ -313,34 +319,34 @@ cat kubernetes_v1.21.11.repo | while read line; do docker pull $line && docker t
     ```shell
     # stop
     sudo systemctl stop kubelet
-
+    
     # 数据迁移
     sudo mv /var/lib/kubelet/{pods,pod-resources} /u01/etc/kubelet/
-
+    
     # 查看当前 root-dir. (default: "/var/lib/kubelet")
     sudo systemctl cat kubelet | grep -- --root-dir
-
+    
     # 查看 kubelet.service 配置
     sudo systemctl cat kubelet
-
+    
     # 1、可直接修改 "kubelet.service"
     ...
     [Service]
     ExecStart=/usr/bin/kubelet [args]
     ...
-
+    
     # 2、或者修改 "kubeadm.conf"
     ...
     [Service]
     Environment="KUBELET_EXTRA_ARGS=--root-dir=/u01/etc/kubelet"
     ...
-
+    
     # KUBELET_EXTRA_ARGS
     # --root-dir=/u01/etc/kubelet            => kubelet 数据存储目录
     # --eviction-hard=nodefs.available<1%    => 在 kubelet 相关存储不足 1% 时，开始驱逐 Pod
     # --eviction-hard=nodefs.available<10Gi  => 在 kubelet 相关存储不足 10G 时，开始驱逐 Pod
     # --eviction-hard=imagefs.available<1%   => 在容器运行时，相关存储不足 1% 时，开始驱逐 Pod
-
+    
     # 重启 kubelet
     sudo systemctl restart kubelet
     ```
@@ -390,14 +396,14 @@ kubectl delete -n kube-system pods $(kubectl get pods -n kube-system | grep kube
 
   ```shell
   # kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-
+  
   # 手动拉取镜像
   docker pull flannelcni/flannel:v0.18.1
   docker pull flannelcni/flannel-cni-plugin:v1.1.0
-
+  
   # 部署 CNI 网络插件
   kubectl apply -f kube-flannel.yaml
-
+  
   # 查看状态
   kubectl get pods -n kube-system
   ```
@@ -731,7 +737,7 @@ ClusterRole:
   ···
   key: value
   ···
-
+  
   # templates
   ···
   ## 变量
@@ -1041,11 +1047,11 @@ kubectl get pods -A | grep Evicted | awk '{print $1}' | sort | uniq | while read
   # <node>
   sudo journalctl -xeu kubelet | grep -- orphaned | sed 's/.*\\"\(.*\)\\".*/\1/' | sort | uniq
   # sudo journalctl -xeu kubelet | grep -- orphaned | sed 's/.*\\"\(.*\)\\".*/\1/' | sort | uniq | awk -v ORS=' ' '{print}' && echo
-
+  
   # 查看 pod name
   # <master>
   podids=$(kubectl get pod -A -o jsonpath='{range .items[*]}{.metadata.namespace} {.metadata.name} {.spec.nodeName} {.metadata.uid} {"\n"}'); sudo journalctl -xeu kubelet | grep -- orphaned | sed 's/.*\\"\(.*\)\\".*/\1/' | sort | uniq | while read line; do echo $podids | grep $line; done
-
+  
   # 清理相关 pod 目录
   # <node>
   ```
@@ -1055,7 +1061,7 @@ kubectl get pods -A | grep Evicted | awk '{print $1}' | sort | uniq | while read
     ```shell
     # 获取 podid
     sudo journalctl -xeu kubelet | grep -- orphaned | sed 's/.*\\"\(.*\)\\".*/\1/' | sort | uniq
-
+    
     # 清理目录
     # rootdir="/var/lib/kubelet"
     # 查看是否定制 root-dir `ps -ef | grep kubelet | grep root-dir`
@@ -1130,18 +1136,18 @@ sudo journalctl -xeu kubelet
   ```shell
   namespace=target
   kubectl get ns $namespace -o json > $namespace.json
-
+  
   # 删除 spec 与 status
   vim $namespace.json
   ...
-
+  
   # 启动代理(需使用 nohup 后台运行，或者开启另一个 session)
   kubectl proxy
   # nohup kubectl proxy &
-
+  
   # 调用接口删除 namespace
   curl -k -H "Content-Type: application/json" -X PUT --data-binary @$namespace.json http://localhost:8001/api/v1/namespaces/$namespace/finalize
-
+  
   # 关闭代理
   # kill -9 $(ps -ux | grep "kubectl proxy" | awk '{if (NR ==1){print $2}}')
   # 或 close session
@@ -1226,7 +1232,7 @@ sudo mv $HOME/*.yaml /etc/kubernetes/manifests/.
   ```shell
   # kubectl apply ...
   kk -a [folder|files]
-
+  
   # kubectl delete ...
   kk -d [folder|files]
   ```
@@ -1234,11 +1240,11 @@ sudo mv $HOME/*.yaml /etc/kubernetes/manifests/.
   ```shell
   cat > $HOME/.super-kuberctl.sh << EOF
   #!/bin/bash
-
+  
   set -e
-
+  
   command="apply"
-
+  
   recursive() {
     local base=$1
     if [[ "${base##*.}" = "yaml" ]]; then
@@ -1250,21 +1256,21 @@ sudo mv $HOME/*.yaml /etc/kubernetes/manifests/.
       done
     fi
   }
-
+  
   if [[ $1 = "-d" ]]; then
     command = "delete"
   fi
-
+  
   for arg in $@; do
     recursive $arg
   done
   EOF
-
+  
   chmod +x $HOME/.kubectl.sh
-
+  
   cat >> $HOME/.zshrc << EOF
   alias kk="$HOME/.super-kuberctl.sh"
   EOF
-
+  
   source $HOME/.zshrc
   ```
