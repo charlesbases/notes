@@ -210,7 +210,8 @@ tar -jxvf demo.tar.bz2
 tar -Zxvf demo.tar.Z
 
 # *.zip
-unzip -d demo demo.zip
+unzip -qq -d demo demo.zip
+# -qq: 静默模式
 ```
 
 ---
