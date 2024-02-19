@@ -380,16 +380,16 @@ find -name .git -prune -o -name .idea -prune -o -type f -print
   while getopts ":a:bc" opt; do
     case $opt in
       a)
-      echo $OPTARG
+        echo $OPTARG
       ;;
       b)
-      echo "b"
+        echo "b"
       ;;
       c)
-      echo "c"
+        echo "c"
       ;;
       ?) # 其他参数
-      echo "invalid input"
+        echo "invalid input"
       ;;
     esac
   done
