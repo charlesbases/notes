@@ -286,6 +286,22 @@ curl [optins] <url>
 
 ---
 
+## echo
+
+```shell
+# 彩色输出
+
+# 黑色前景
+echo -e "\033[30m$(date)\033[0m"
+
+```
+
+```shell
+# 读取输入
+```
+
+---
+
 ## eval
 
 ```shell

@@ -51,7 +51,38 @@ git push origin <local-branch>:<remote-branch>
 
 ---
 
-## 4. branch
+## 4. merge
+
+```shell
+# 参数
+#  --continue: 继续变基
+#  --abort: 撤销变基, 恢复之前的代码
+#  --skip: 跳过提交
+```
+
+- ##### merge
+
+- ##### rebase
+
+  ```shell
+  # 第一步：解决代码冲突
+  
+  # 第二步：添加变动文件到暂存区
+  git add .
+  
+  # 第三步：提交文件变动
+  git commit --amend
+  
+  # 第四步：继续变基
+  git rebase --continue
+  
+  # 第五步：提交至远程仓库
+  git push origin HEAD:[branch] --force
+  ```
+
+---
+
+## 5. branch
 
 ```shell
 # 分支关联
@@ -73,7 +104,7 @@ git branch --set-upstream-to=<remote-branch> <local-branch>
 
 ---
 
-## 5. submodule
+## 6. submodule
 
 - ##### 添加
 
@@ -105,11 +136,11 @@ git branch --set-upstream-to=<remote-branch> <local-branch>
 
 ---
 
-## 6. [gitconfig](.share/gitconfig)
+## 7. [gitconfig](.share/gitconfig)
 
 ---
 
-## 7. completion
+## 8. completion
 
 ```shell
 ```
@@ -118,7 +149,7 @@ git branch --set-upstream-to=<remote-branch> <local-branch>
 
 ---
 
-## 8. filter-branch
+## 9. filter-branch
 
 ```shell
 # 删除大文件
@@ -132,7 +163,7 @@ git push -f
 
 ---
 
-## 9. git-for-windows
+## 10. git-for-windows
 
 ```shell
 # ssh: connect to host github.com port 22: Connection timed out
@@ -189,7 +220,7 @@ rm -rf ~/AppData/Local/Temp/* &>/dev/null
 
 ---
 
-## 10. githubusercontent
+## 11. githubusercontent
 
 ```shell
 # 下载 github 项目文件
@@ -197,6 +228,16 @@ wget -O - https://raw.githubusercontent.com/<user>/<repo>/<branch>/<filepath> > 
 ```
 
 ## ——————
+
+## alias
+
+```shell
+alias gitc = "git checkout ."
+```
+
+
+
+---
 
 ## others
 

@@ -47,7 +47,7 @@ go test -v .
 go test -v -count 1 .
 
 # 运行指定函数
-# 注意：-run 是运行正则匹配的测试环境
+# 注意：-run 是运行正则匹配的测试用例
 go test -v -run TestName .
 ```
 
@@ -63,11 +63,24 @@ go test -coverprofile=cover.out && go tool cover -html=cover.out -o cover.html
 
 ### 1.2. benchmark
 
-```shell
-#
-go test -test.bench=. -test.count=1 -test.benchmem .
+- ##### args
 
-# 运行指定的基准测试函数
+  ```shell
+  # -test.bench=.
+  # 运行性能测试
+  
+  # -test.bench=BenchmarkFunc
+  # 运行匹配的性能测试用例
+  
+  # -test.benchtime=10x [30s]
+  # 性能测试运行10次，或者30s
+  
+  # -test.benchmem
+  # 统计内存分配次数
+  ```
+
+```shell
+go test -test.bench=. -test.count=1 -test.benchmem .
 ```
 
 #### 1.2.1. pprof
@@ -141,3 +154,74 @@ go install golang.org/x/tools/cmd/goimports@latest
 # use
 goimports -w [filepath]
 ```
+
+## ——————————
+
+## github.com/urfave/cli
+
+```shell
+go get -u github.com/urfave/cli/v2
+```
+
+```go
+
+```
+
+---
+
+## github.com/spf13/cobra
+
+```shell
+go get -u github.com/spf13/cobra
+```
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/spf13/cobra"
+)
+
+func main() {
+	app := &cobra.Command{
+		Use:   "root",         // Usage
+		Short: "root command", // command 说明
+		// 在 -h 显示的 Usage 中，不自动在 Use 中追加 [flags]，可用于自定义 Usage 显示
+		// eg:
+		//   flase: root [flags]
+		//   true: root
+		DisableFlagsInUseLine: true,
+		// 不建议直接使用 cobra.MinimumNArgs(1) 解析 args。因为不可对 args 进行判断，以及进行必要的说明
+		// 推荐在 RunE 中实现 Validate(args []string) error 进行输入参数判断
+		// Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+	}
+
+	sub := &cobra.Command{
+		Use:   "sub",
+		Short: "sub command",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+	}
+
+	// 子命令添加 flags
+	sub.Flags().StringP("field", "f", "default", "input field")
+
+	// 添加子命令
+	app.AddCommand(sub)
+
+	// 执行命令
+	if err := app.Execute(); err != nil {
+         // Command 中使用 RunE 时，error 会自动打印一次
+		// log.Fatal(err)
+	}
+}
+```
+
+---
+
