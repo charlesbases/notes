@@ -179,10 +179,18 @@ go get -u github.com/spf13/cobra
 package main
 
 import (
-	"log"
+	"errors"
 
 	"github.com/spf13/cobra"
 )
+
+// validate .
+func validate(args []string) error {
+	if len(args) == 0 {
+		return errors.New("args cannot be empty")
+	}
+	return nil
+}
 
 func main() {
 	app := &cobra.Command{
@@ -192,11 +200,18 @@ func main() {
 		// eg:
 		//   flase: root [flags]
 		//   true: root
-		DisableFlagsInUseLine: true,
+		// DisableFlagsInUseLine: true,
+		// Execute 执行失败后，不打印 help 信息
+		SilenceUsage: true,
+		// Execute 执行失败后，不打印 error 信息
+		SilenceErrors: true,
 		// 不建议直接使用 cobra.MinimumNArgs(1) 解析 args。因为不可对 args 进行判断，以及进行必要的说明
-		// 推荐在 RunE 中实现 Validate(args []string) error 进行输入参数判断
+		// 推荐在 RunE 中实现 validate(args []string) error 进行输入参数判断
 		// Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := validate(args); err != nil {
+				return err
+			}
 			return nil
 		},
 	}
@@ -217,10 +232,11 @@ func main() {
 
 	// 执行命令
 	if err := app.Execute(); err != nil {
-         // Command 中使用 RunE 时，error 会自动打印一次
+		// Command 中使用 RunE 时，error 会自动打印一次
 		// log.Fatal(err)
 	}
 }
+
 ```
 
 ---
