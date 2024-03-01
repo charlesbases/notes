@@ -233,6 +233,162 @@ unzip -qq -d demo demo.zip
 
 ---
 
+## [wrk](https://www.cnblogs.com/quanxiaoha/p/10661650.html)
+
+- ##### install
+
+  - ##### mac
+
+    ```shell
+    brew install wrk
+    ```
+
+  - ##### linux
+
+    ```shell
+    # lib
+    sudo apt install git libssl-dev build-essential -y
+    
+    # wrk
+    git clone https://github.com/wg/wrk.git wrk
+    cd wrk
+    make
+    sudo mv wrk /usr/bin/wrk
+    sudo chown root:root /usr/bin/wrk
+    ```
+
+- ##### options
+
+  ```shell
+  Usage: wrk <options> <url>
+    Options:
+      -c, --connections <N>  # 与服务器建立并保持 TCP 连接的总数量
+      -d, --duration    <T>  # 压测时间
+      -t, --threads     <N>  # 压测线程数
+  
+      -s, --script      <S>  # 指定 lua 脚本路径
+      -H, --header      <H>  # Add header to request
+          --latency          # 压测结束后，打印延迟统计信息
+          --timeout     <T>  # 连接超时时间
+      -v, --version          # wrk 版本信息
+  
+    <N> 代表数字参数，支持国际单位 (1k, 1M, 1G)
+    <T> 代表时间参数，支持时间单位 (2s, 2m, 2h)
+  ```
+
+  ```shell
+  # -t: 推荐设置为压测机器 CPU 核心数的 2-4 倍
+  
+  # 实际单线程分配的连接数为 (connections / threads)
+  ```
+
+- ##### report
+
+  ```shell
+  # wrk -t 32 -c 100 -d 30s --latency http://10.63.3.11:30080/swagger/index.html
+  
+  Running 30s test @ http://10.63.3.11:30080/swagger/index.html
+    32 threads and 100 connections
+    
+  #  	状态        平均值     标准差    最大值  正负标准差所占比例
+    Thread Stats   Avg      Stdev     Max    +/- Stdev
+    
+  #   延迟
+      Latency    24.49ms   29.51ms 201.67ms   78.78%
+      
+  #   每秒请求数
+      Req/Sec    292.77    138.20    1.86k    72.88%
+  
+  #   延迟分布
+    Latency Distribution 
+       50%    4.69ms
+       75%   47.67ms
+       90%   73.86ms
+       99%   90.83ms
+    280671 requests in 30.09s, 1.01GB read # 30.09s 内处理了 280671 次请求，总接收数据 1.01 GB
+  Requests/sec:   9326.66   # 每秒平均处理请求 9326.66
+  Transfer/sec:     34.53MB # 每秒平均接收数据 34.53 MB
+  ```
+
+- ##### script
+
+  - ##### local
+
+    ```lua
+    -- 全局变量
+    wrk = {
+      scheme  = "http",
+      host    = "localhost",
+      port    = 8080,
+      method  = "GET",
+      path    = "/",
+      headers = {},
+      body    = nil,
+      thread  = <userdata>,
+    }
+
+    -- 全局方法
+    wrk.format(method, path, headers, body) -- 根据参数和全局变量 `wrk`， 生成 HTTP request 字符串
+    wrk.lookup(host, service)               -- 返回所有可用的服务器地址信息
+    wrk.connect(addr)                       -- test connect
+    ```
+
+  - ##### api
+
+    ```lua
+    -- 启动阶段
+    function setup(thread)
+
+    -- 运行阶段
+    function init(args)
+    function delay()    -- 每次发送请求前调用，可用来定制延迟时间
+    function request()  -- 用来生成请求，每一次请求都会先调用此方法
+    function response(status, headers, body) -- 在收到每一个相应后调用
+
+    -- 结束阶段
+    function done(summary, latency, request) -- 在整个测试过程中只会调用一次，可以生成定制化的测试报告
+    ```
+
+  - ##### demo
+
+    ```lua
+    -- 自定义请求参数
+    wrk.headers["Content-Type"] = "application/json"
+    
+    request = function()
+        id = math.random(1, 100000)
+        path = "/api?id=" .. id
+        return wrk.format("GET", path)
+    end
+    ```
+
+    ```lua
+    -- 每次请求前延迟 10ms
+    delay = function()
+        return 10
+    end
+    ```
+
+    ```lua
+    -- 先认证，后请求
+    token = nil
+    path = "/api/login"
+    
+    request = function()
+        return wrk.format("GET", path)
+    end
+    
+    response = function(status, headers, body)
+        if not token and status == 200 then
+            token = headers["Authorization"]
+            path = "api/user/list"
+            wrk.headers["Authorization"] = token
+        end
+    end
+    ```
+
+---
+
 ## args
 
 ```shell
