@@ -37,7 +37,7 @@ set fileformats=unix,dos     " 换行符
 
 set t_Co=256                 " 颜色
 
-colorscheme pablo            " habamax pablo slate wildcharm
+colorscheme habamax          " habamax pablo slate wildcharm
 
 " 默认以双字节处理那些特殊字符
 if v:lang =~? '^\(zh\)\|\(ja\)\|\(ko\)'
