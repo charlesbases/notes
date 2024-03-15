@@ -1,26 +1,24 @@
 #!/usr/bin/env bash
 
-if test -z "$WINELOADERNOEXEC"
+GIT_EXEC_PATH="$(git --exec-path 2>/dev/null)"
+COMPLETION_PATH="${GIT_EXEC_PATH%/libexec/git-core}"
+COMPLETION_PATH="${COMPLETION_PATH%/lib/git-core}"
+COMPLETION_PATH="$COMPLETION_PATH/share/git/completion"
+if test -f "$COMPLETION_PATH/git-completion.bash"
 then
-  GIT_EXEC_PATH="$(git --exec-path 2>/dev/null)"
-  COMPLETION_PATH="${GIT_EXEC_PATH%/libexec/git-core}"
-  COMPLETION_PATH="${COMPLETION_PATH%/lib/git-core}"
-  COMPLETION_PATH="$COMPLETION_PATH/share/git/completion"
-
-  if test -f "$COMPLETION_PATH/git-prompt.sh"
-  then
-    . "$COMPLETION_PATH/git-completion.bash"
-  fi
+  . "$COMPLETION_PATH/git-completion.bash"
 fi
 
+
 __git_branch() {
-  local branch=$(git branch 2>/dev/null | grep '*' | sed 's/^* //g')
+  local branch=$(git branch 2>/dev/null | awk -F' ' '/*/ {print $2}')
 
   if test -n "$branch"
   then
     echo -e "\033[36m($branch)\033[0m"
   fi
 }
+
 
 # color: blue
 PS1='\n\[\033[34m\]#\[\033[0m\] '

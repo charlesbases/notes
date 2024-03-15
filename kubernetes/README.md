@@ -860,11 +860,6 @@ cat nginx.yaml | kubectl apply -f -
 
 ### 7.1. OOMKilled
 
-```shell
-# Exit 137
-# 内存不足
-```
-
 ---
 
 ## 8. 问题排查

@@ -1,5 +1,3 @@
-
-
 ## df
 
 ```shell
@@ -446,14 +444,23 @@ curl [optins] <url>
 
 ```shell
 # 彩色输出
-
-# 黑色前景
 echo -e "\033[30m$(date)\033[0m"
 
+# 30m: 黑色前景
+# 31m: 红色前景 
+# 32m: 绿色前景
+# 33m: 黄色前景
+# 34m: 蓝色前景
+# 35m: 紫色前景
+# 36m: 青色前景
 ```
 
 ```shell
 # 读取输入
+read -p "press Enter to continue or any key to abort" input
+if [[ -n $input ]]; then
+  exit
+fi
 ```
 
 ---
@@ -776,6 +783,10 @@ echo 'a:b:c:d:e:f' | cut -d: -f2-
 
 # 以 ':' 为分隔符，打印第二至第三个字段
 echo 'a:b:c:d:e:f' | cut -d: -f2-3
+
+# 以 ':' 为分隔符，打印最后一个字段
+# rev: 文本反转
+echo 'a:b:c:d:e:f' | rev | cut -d: -f1 | rev
 ```
 
 ### 4. sed
@@ -1546,6 +1557,13 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
 - ##### mkcert
 
   ```shell
+  ## dadada
+  ```
+  
+  
+  
+  ```shell
+  # https://github.com/FiloSottile/mkcert/release/latest
   ```
 
 ---
