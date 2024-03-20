@@ -82,6 +82,30 @@ sudo mkdir -p $GOPATH/{bin,pkg,src}
 #   *p++      <=> (*p)++
 ```
 
+```text
+.
+├── api # openapi/swagger 规范，json 示例文件
+│   └── swgger.json
+├── build # 编译脚本
+│   ├── build.sh
+│   └── ci # ci 工具集成脚本
+│       └── jenkins.sh
+├── cmd
+│   └── app
+│       └── app.go
+├── config # 配置文件
+│   └── app.yaml
+├── deployment # 系统和容器编排部署配置和模板
+├── docs # 文档
+│   └── api.md
+├── internal
+├── pkg
+├── scripts
+├── test 
+├── thirdparty
+└── web # 静态 web 资源
+```
+
 ### 1. go test
 
 ```shell

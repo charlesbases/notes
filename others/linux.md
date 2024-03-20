@@ -246,7 +246,7 @@ unzip -qq -d demo demo.zip
     ```shell
     # lib
     sudo apt install git libssl-dev build-essential -y
-    
+  
     # wrk
     git clone https://github.com/wg/wrk.git wrk
     cd wrk
@@ -263,20 +263,20 @@ unzip -qq -d demo demo.zip
       -c, --connections <N>  # 与服务器建立并保持 TCP 连接的总数量
       -d, --duration    <T>  # 压测时间
       -t, --threads     <N>  # 压测线程数
-  
+
       -s, --script      <S>  # 指定 lua 脚本路径
       -H, --header      <H>  # Add header to request
           --latency          # 压测结束后，打印延迟统计信息
           --timeout     <T>  # 连接超时时间
       -v, --version          # wrk 版本信息
-  
+
     <N> 代表数字参数，支持国际单位 (1k, 1M, 1G)
     <T> 代表时间参数，支持时间单位 (2s, 2m, 2h)
   ```
 
   ```shell
   # -t: 推荐设置为压测机器 CPU 核心数的 2-4 倍
-  
+
   # 实际单线程分配的连接数为 (connections / threads)
   ```
 
@@ -284,21 +284,21 @@ unzip -qq -d demo demo.zip
 
   ```shell
   # wrk -t 32 -c 100 -d 30s --latency http://10.63.3.11:30080/swagger/index.html
-  
+
   Running 30s test @ http://10.63.3.11:30080/swagger/index.html
     32 threads and 100 connections
-    
+
   #  	状态        平均值     标准差    最大值  正负标准差所占比例
     Thread Stats   Avg      Stdev     Max    +/- Stdev
-    
+
   #   延迟
       Latency    24.49ms   29.51ms 201.67ms   78.78%
-      
+
   #   每秒请求数
       Req/Sec    292.77    138.20    1.86k    72.88%
-  
+
   #   延迟分布
-    Latency Distribution 
+    Latency Distribution
        50%    4.69ms
        75%   47.67ms
        90%   73.86ms
@@ -447,7 +447,7 @@ curl [optins] <url>
 echo -e "\033[30m$(date)\033[0m"
 
 # 30m: 黑色前景
-# 31m: 红色前景 
+# 31m: 红色前景
 # 32m: 绿色前景
 # 33m: 黄色前景
 # 34m: 蓝色前景
@@ -1248,6 +1248,49 @@ reboot
 
 ---
 
+## nginx
+
+- ##### rewrite
+
+  ```
+  syntax:  rewrite regex replacement [flag];
+  context: server, location, if
+  ```
+
+  ```shell
+  rewrite ^/api/(.*)$ /$1 break;
+  # /api/login => /login
+  ```
+
+- ##### proxy_pass
+
+  ```
+  syntax:  proxy_pass URL;
+  context: location, if in location, limit_except
+  ```
+
+  ```shell
+  location /api/ {
+    proxy_pass http://127.0.0.1;
+    # http://example.com/api/login => http://127.0.0.1/api/login
+  }
+  
+  # 注意：
+  #   1. 若 URL 中包含 URI，则 location 中的 URI 则会被替换. eg:
+  #     location /api/ {
+  #       proxy_pass http://127.0.0.1/apiv1/;
+  #       # http://example.com/api/login => http://127.0.0.1/apiv1/login
+  #     }
+  #   2. 若 proxy_pass 前用了 rewrite，那么 proxy_pass 的 URI 无效. eg:
+  #     location /api/ {
+  #       rewrite ^/api/(.*)$ /apiv2/$1 break;
+  #       proxy_pass http://127.0.0.1/apiv1/; # apiv1 无效
+  #       # http://example.com/api/login => http://127.0.0.1/apiv2/login
+  #     }
+  ```
+
+---
+
 ## nohup
 
 ```shell
@@ -1418,21 +1461,21 @@ EOF
     ```shell
     # 备份
     sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-    
+  
     ···
     # cqu
     http://mirrors.cqu.edu.cn
-    
+  
     # ustc
     http://mirrors.ustc.edu.cn
-    
+  
     # aliyun
     http://mirrors.aliyun.com
-    
+  
     # tsinghua
     http://mirrors.tuna.tsinghua.edu.cn
     ···
-    
+  
     ··· Debian 11
     deb http://mirrors.aliyun.com/debian/ bullseye main
     # deb-src http://mirrors.aliyun.com/debian/ bullseye main
@@ -1443,7 +1486,7 @@ EOF
     deb http://mirrors.aliyun.com/debian-security bullseye-security main
     # deb-src http://mirrors.aliyun.com/debian-security bullseye-security main
     ···
-    
+  
     apt update -y
     ```
 
@@ -1559,9 +1602,9 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
   ```shell
   ## dadada
   ```
-  
-  
-  
+
+
+
   ```shell
   # https://github.com/FiloSottile/mkcert/release/latest
   ```
