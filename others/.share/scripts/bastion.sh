@@ -2,7 +2,7 @@
 
 set -e
 
-repo=$HOME/.remote
+repofile=$HOME/.remote
 
 help() {
   echo """\
@@ -11,115 +11,94 @@ usage:
 
 options:
   -h help
-  -i identity_file
-  -v vim remote file
-  -a show remote list"""
+  -i add identity_file
+  -v vim args file
+  -p show password"""
   exit
 }
 
-index=0
 display() {
-  local limit=0
-  while read line; do
-    args=($line)
-    if [[ $limit -lt $[${#args[0]}+${#args[1]}] ]]; then
-      limit=$[${#args[0]}+${#args[1]}+3]
-    fi
-  done <<< $(grep -v '^#\|^$' $repo)
+  local count=
+  if [[ -z $show_password ]]; then
+    # hide password
+    count=$[$(awk '!/^#/ && NF>0 {print length($1 $2)}' $repofile | sort -r | head -1) + 3]
+    awk -v total=$count '!/^#/ && NF>0 {seq++; n = total - length($1 $2); printf "%d. \033[32m%s\033[0m \033[34m%s\033[0m ", seq, $1, $2; for (i=1;i<=n;i++) printf "."; printf " "; print ($5 != "") ? substr($0, index($0, $5)) : "<none>"}' $repofile
+  else
+    # show password
+    count=$[$(awk '!/^#/ && NF>0 {print length($1 $2 $3)}' $repofile | sort -r | head -1) + 3]
+    awk -v total=$count '!/^#/ && NF>0 {seq++; n = total - length($1 $2 $3); printf "%d. \033[32m%s\033[0m \033[34m%s\033[0m \033[31m%s\033[0m ", seq, $1, $2, $3; for (i=1;i<=n;i++) printf "."; printf " "; print ($5 != "") ? substr($0, index($0, $5)) : "<none>"}' $repofile
+  fi
 
-  while read line; do
-    index=$[index+1]
-
-    args=($line)
-    echo -e "$index. \033[32m${args[0]}\033[0m\033[34m <${args[1]}>\033[0m \c "
-    for (( i = 0; i < $[$limit-${#args[0]}-${#args[1]}]; i++ )); do
-      echo -n "·"
-    done
-    if [[ -n ${args[4]} ]]; then
-      echo " ${args[4]}"
-    else
-      echo " <none>"
-    fi
-  done <<< $(grep -v '^#\|^$' $repo)
+  if [[ $count -eq 3 ]]; then
+    echo -e "\033[31m<empty>\033[0m"
+    exit
+  fi
 }
 
 connect() {
   read -sp ">: " input
 
-  if [[ "$input" -lt 1 ]] || [[ "$input" -gt $index ]] ; then
-    echo -e "\033[31mmust be 1 - $index\033[0m"
+  local args=($(awk -v n=$input '!/^#/ && NF>0 {seq++; if (seq==n) {print $2"@"$1, $4; exit}}' $repofile))
+
+  local dest=${args[0]}
+  local jumpserver=${args[1]}
+
+  if [[ -n $dest ]]; then
+    echo -e "\033[31m$dest\033[0m"
+  else
+    echo -e "\033[31mexit\033[0m"
     exit
   fi
 
-  args=($(grep -m $input -v '^#\|^$' $repo | tail -n 1))
-  ip=${args[0]}
-  user=${args[1]}
-  passwd=${args[2]}
-  bastion=${args[3]}
+  if [[ "$jumpserver" == "direct" ]]; then
+    if [[ -n "$identity_file" ]]; then
+      ssh-copy-id -i $identity_file $dest
+    fi
 
-  echo -e "\033[31m$user@$ip\033[0m"
-
-  # sshpass
-  #if [[ -n $(command -v sshpass) ]]; then
-  #  sshpass -p $passwd ssh $user@$ip
-  #fi
-
-  # ssh-copy-id
-  if [[ -n "$identity" ]]; then
-    ssh-copy-id -i $identity $user@$ip
-  fi
-
-  # direct
-  if [[ "$bastion" == "direct" ]]; then
-    ssh $user@$ip
+    ssh $dest
   else
-    ssh -t $bastion "ssh $user@$ip"
+    ssh -t $jumpserver "ssh $dest"
   fi
-}
-
-main() {
-  display
-  connect
 }
 
 # ssh-copy-id
-identity=""
+identity_file=
 
-if [[ ! -f $repo ]]; then
-  cat > $repo << EOF
-# IP           User  Passwd  Bastion           Remark
+# show password for args
+show_password=
+
+while getopts ":h:i:pv" opt; do
+  case $opt in
+    i)
+      if [[ ! -f "$OPTARG" ]]; then
+        echo -e "\033[31minvalid identity_file. no such file or directory\033[0m"
+        exit
+      fi
+
+      identity=$OPTARG
+    ;;
+    v)
+      vim $repofile
+      exit
+    ;;
+    p)
+      show_password=true
+    ;;
+    ?) # 其他参数
+      help
+    ;;
+  esac
+done
+
+# start
+if [[ ! -f $repofile ]]; then
+  cat > $repofile << EOF
+# IP           User  Passwd  JumpServer        Remark
 # 192.168.6.9  user  passwd  direct            direct connect server
 # 192.168.9.6  user  passwd  user@192.168.6.9  bastion host connect
 
 EOF
 fi
 
-while getopts ":h:i:av" opt; do
-  case $opt in
-    h)
-    echo $OPTARG
-    ;;
-    i)
-    if [[ ! -f "$OPTARG" ]]; then
-      echo -e "\033[31mInvalid identity_file. No such file or directory\033[0m"
-      exit
-    fi
-    identity=$OPTARG
-    ;;
-    v)
-    vim $repo
-    exit
-    ;;
-    a)
-    display
-    exit
-    ;;
-    ?) # 其他参数
-    help
-    ;;
-  esac
-done
-
-#shift $(($OPTIND - 1))
-
-main
+display
+connect
