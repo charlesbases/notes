@@ -246,7 +246,7 @@ unzip -qq -d demo demo.zip
     ```shell
     # lib
     sudo apt install git libssl-dev build-essential -y
-  
+    
     # wrk
     git clone https://github.com/wg/wrk.git wrk
     cd wrk
@@ -463,6 +463,25 @@ if [[ -n $input ]]; then
 fi
 ```
 
+- ANSI
+
+  ```shell
+  echo -e '<ANSI>'
+  ```
+
+  ```shell
+  # '\033[<N>A': 向上移动 N 行
+  # '\033[<N>B': 向下移动 N 行
+  # '\033[<N>C': 向右移动 N 列
+  # '\033[<N>D': 向右移动 N 列
+  ```
+
+  ```shell
+  # '\033[2K': 清除当前行
+  # '\033[1K': 清除当前行到行首
+  # '\033[0K': 清除当前位置到行尾
+  ```
+
 ---
 
 ## eval
@@ -494,6 +513,8 @@ find -name .git -prune -o -name .idea -prune -o -type f -print
 # `-print`  显示匹配项到标准输出
 # `-type d` 显示文件夹
 # `-type f` 显示文件
+# `-mindepth 1` 搜索的最小目录层级（从一级子目录开始）
+# `-maxdepth 1` 搜索的最大目录层级（只搜索当前目录及其一级子目录）
 # `-name .git -prune` 排除名称为 '.git' 的文件夹
 # `-o` 或，用于连接多个表达式
 ```
@@ -623,6 +644,13 @@ echo 'hello world' | tr ' ' '\n'
 ```
 
 ### 2. awk
+
+```shell
+# awk 的表达式以一个或多个 'pattern { action }' 构成
+
+# `pattern`:  是一个模式, 通常是一个条件或模式匹配. eg: 'NR>1 && NF>1 { print }'
+# `{ print }`:是一个代码块, 包含了要在 `pattern` 匹配的行上执行的一系列命令
+```
 
 - ##### variable
 
@@ -756,6 +784,19 @@ awk '/^---/ {if (mark) { print FILENAME":"above; print FILENAME":"NR}; above=NR;
 
 # 在 k8s 的 多个资源类型 yaml 中，找到匹配字符所在的模块, 并注释相关代码
 awk '/^---/ {if (focus) { print above","NR}; above=NR; focus=""; next} /^kind: Namespace/ {focus=NR}' tekton.yaml | while read line; do sed -i "$line {/^[^#]/ s/^/# /}" tekton.yaml; done
+```
+
+```shell
+# 获取 deploy 的 yaml 文件，并移除 'annotations'、'managedFields' 、'status' 等相关内容
+kubectl get deploy -n default app -o yaml | awk '/^  managedFields/ {start=NR; next} start && !/^  [a-z]/ {next} {start=0; print}' | awk '/annotations/,/creationTimestamp/ {next} {print}' | awk '/^status/ {skip=1; next} skip {next} {print}'
+
+# awk '/annotations/,/creationTimestamp/ {next} {print}'
+# 匹配到 /annotations/ 和 /creationTimestamp/ 之间的内容执行 {next}, 否则执行 {print}。PS: 包含匹配行
+
+# awk '/^  managedFields/ {start=NR; next} start && !/^  [a-z]/ {next} {start=0; print}'
+# 1. /^  managedFields/ {start=NR; next}: 匹配到 /^  managedFields/ 则执行 {start=NR; next}，标记 start 并跳过打印该行
+# 2. start && !/^  [a-z]/ {next} {start=0; print}: 若 start 不为空且 !/^  [a-z]/, 则执行 {next}, 否则结束标记并打印
+# 3. awk '/^status/ {skip=1; next} skip {next} {print}': 跳过打印 /^status/ 后的所有行
 ```
 
 #### 2.2. commands
@@ -1461,21 +1502,21 @@ EOF
     ```shell
     # 备份
     sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-  
+    
     ···
     # cqu
     http://mirrors.cqu.edu.cn
-  
+    
     # ustc
     http://mirrors.ustc.edu.cn
-  
+    
     # aliyun
     http://mirrors.aliyun.com
-  
+    
     # tsinghua
     http://mirrors.tuna.tsinghua.edu.cn
     ···
-  
+    
     ··· Debian 11
     deb http://mirrors.aliyun.com/debian/ bullseye main
     # deb-src http://mirrors.aliyun.com/debian/ bullseye main
@@ -1486,7 +1527,7 @@ EOF
     deb http://mirrors.aliyun.com/debian-security bullseye-security main
     # deb-src http://mirrors.aliyun.com/debian-security bullseye-security main
     ···
-  
+    
     apt update -y
     ```
 
