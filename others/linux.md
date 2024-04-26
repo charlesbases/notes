@@ -1,4 +1,4 @@
-## args
+## ★ args
 
 ```shell
 # $0 # 命令本身
@@ -15,7 +15,7 @@
 
 ---
 
-## bash-completion
+## ★ bash-completion
 
 ```shell
 # 下载 completion 脚本
@@ -40,7 +40,91 @@ source /usr/share/bash-completion/completions/git
 
 ---
 
-## corndns
+## ★ basic-settings
+
+### ⚝ hostname
+
+```shell
+sudo hostnamectl set-hostname athena
+```
+
+### ⚝ root
+
+```shell
+# linux 开启 root 用户登录
+sh -c 'echo "PermitRootLogin yes" >> /etc/ssh/sshd_config'
+```
+
+```shell
+# 取消倒计时
+sed -i -s "s/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=1/g" /etc/default/grub
+# 重启
+update-grub2 && reboot
+```
+
+### ⚝ user
+
+```shell
+# 所有用户
+cat /etc/passwd
+# getent passwd
+
+# 添加用户
+sudo useradd -G root,docker -s /bin/zsh -d /home/user -m user
+
+# 删除用户
+sudo userdel -r user
+```
+
+- group
+
+  ```shell
+  # 当前用户所属组
+  groups
+
+  # 添加用户组
+  sudo groupadd usergroup
+
+  # 删除用户组
+  sudo groupdel usergroup
+
+  # 添加用户至 root 组
+  sudo gpasswd -a $USER root
+
+  # 从 root 组删除用户
+  sudo gpasswd -d $USER root
+
+  # 更新 root 用户组
+  newgrp usergroup
+  ```
+
+- sudoers
+
+  ```shell
+  sudo vim /etc/sudoers
+
+  # 添加 sudo 权限
+  username ALL=(ALL:ALL) ALL
+
+  # 普通用户 sudo 免密
+  username ALL=(ALL) NOPASSWD:ALL
+  ```
+
+- passwd
+
+  ```shell
+  # 修改当前用户密码
+  sudo passwd
+
+  # 修改其他用户密码
+  sudo passwd sun
+  ```
+
+
+
+---
+
+## ★ corndns
 
 ```shell
 # 禁用 systemd-resolve
@@ -85,7 +169,7 @@ EOF
 
 ---
 
-## curl
+## ★ curl
 
 ```shell
 curl [optins] <url>
@@ -103,7 +187,7 @@ curl [optins] <url>
 
 ---
 
-## date
+## ★ date
 
 ```shell
 # %Y 年份. 2006
@@ -127,7 +211,7 @@ curl [optins] <url>
 
 ---
 
-## disk
+## ★ disk
 
 - df
 
@@ -159,7 +243,7 @@ curl [optins] <url>
 
 ---
 
-## eval
+## ★ eval
 
 ```shell
 # 将参数作为命令进行解释并执行
@@ -171,7 +255,7 @@ eval $command
 
 ---
 
-## fdisk
+## ★ fdisk
 
 ```shell
 # 查看已有分区
@@ -200,7 +284,7 @@ reboot
 
 ---
 
-## find
+## ★ find
 
 ```shell
 # 递归显示文件夹下所有子文件夹及其目录
@@ -232,7 +316,7 @@ find . -type f -name "*.go" -print
 
 ---
 
-## firewalld
+## ★ firewalld
 
 ```shell
 # 查看防火墙状态
@@ -271,17 +355,7 @@ firewall-cmd --zone=public --list-ports
 
 ---
 
-## hostname
-
-```shell
-sudo hostnamectl set-hostname athena
-```
-
-
-
----
-
-## if
+## ★ if
 
 ```shell
 # 判断对象是否为空
@@ -317,7 +391,7 @@ fi
 
 ---
 
-## loop
+## ★ loop
 
 - for
 
@@ -350,7 +424,7 @@ fi
 
 ---
 
-## mirrors
+## ★ mirrors
 
 - apt
 
@@ -403,7 +477,7 @@ fi
 
 ---
 
-## nfs
+## ★ nfs
 
 - master
 
@@ -463,7 +537,7 @@ fi
 
 ---
 
-## nginx
+## ★ nginx
 
 - rewrite
 
@@ -510,7 +584,7 @@ fi
 
 ---
 
-## nohup
+## ★ nohup
 
 ```shell
 # 后台启动
@@ -524,7 +598,7 @@ ps aux | grep "./script.sh"
 
 ---
 
-## ohmyzsh
+## ★ ohmyzsh
 
 ```shell
 # sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -596,7 +670,7 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
 
 ---
 
-## openssl
+## ★ openssl
 
 ![ssl](.share/openssl.png)
 
@@ -656,7 +730,7 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
 
 ---
 
-## opts
+## ★ opts
 
 - select
 
@@ -726,7 +800,7 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
 
 ---
 
-## redirect
+## ★ redirect
 
 ```shell
 # > : 用于将标准输出重定向到文件 eg: date >/dev/null
@@ -746,7 +820,7 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
 
 ---
 
-## resources
+## ★ resources
 
 - cpu
 
@@ -762,29 +836,7 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
 
 ---
 
-## root
-
-```shell
-vim /etc/ssh/sshd_config
-
-···
-PermitRootLogin yes
-···
-
-#
-sh -c 'echo "PermitRootLogin yes" >> /etc/ssh/sshd_config'
-
-# 取消倒计时
-sed -i -s "s/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=1/g" /etc/default/grub
-
-update-grub2 && reboot
-```
-
-
-
----
-
-## rsync
+## ★ rsync
 
 ```shell
 # 本地同步
@@ -803,7 +855,7 @@ rsync -a source user@remote:destination
 
 ---
 
-## service
+## ★ service
 
 ```shell
 sudo cat > /etc/systemd/system/myservice.service << EOF
@@ -923,7 +975,7 @@ WantedBy=[表示该服务所在的Target]
 
 ---
 
-## ssh
+## ★ ssh
 
 ```shell
 sudo apt install openssh-server ufw -y
@@ -980,7 +1032,7 @@ EOF
 
 ---
 
-## swap
+## ★ swap
 
 ```shell
 # 临时禁用
@@ -1007,7 +1059,7 @@ free -m
 
 ---
 
-## sysctl
+## ★ sysctl
 
 ```shell
 # 内核优化
@@ -1092,7 +1144,7 @@ echo madvise | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
 
 ---
 
-## tar
+## ★ tar
 
 ```shell
 # -c 建立新的备份文件(压缩)
@@ -1137,9 +1189,9 @@ unzip -qq -d demo demo.zip
 
 ---
 
-## text
+## ★ text
 
-### awk
+### ⚝ awk
 
 ```shell
 # awk 的表达式以一个或多个 'pattern { action }' 构成
@@ -1311,7 +1363,7 @@ kubectl get deploy -n default app -o yaml | awk '/^  managedFields/ {start=NR; n
 
 ---
 
-### cut
+### ⚝ cut
 
 ```shell
 # 以单字符作为列分隔符
@@ -1340,7 +1392,7 @@ echo 'a:b:c:d:e:f' | rev | cut -d: -f1 | rev
 
 ---
 
-### echo
+### ⚝ echo
 
 ```shell
 # 彩色输出
@@ -1417,7 +1469,7 @@ str="abcdedcba"; echo ${str//a/_}
 
 ---
 
-### grep
+### ⚝ grep
 
 ```shell
 # -i 忽略大小写
@@ -1470,7 +1522,7 @@ grep -o 'https://[^"]*'
 
 ---
 
-### head
+### ⚝ head
 
 ```shell
 # 默认显示文件前十行
@@ -1485,7 +1537,7 @@ head [options] <file>
 
 ---
 
-### sed
+### ⚝ sed
 
 - options
 
@@ -1636,7 +1688,7 @@ sed -n '/image:/ s/image://p' calico.yaml
 
 ---
 
-### sort
+### ⚝ sort
 
 ```shell
 # 按 ASCII 正序
@@ -1653,7 +1705,7 @@ echo "a bbb cc ddd" | tr ' ' '\n' | awk '{print length($1), $1}' | sort
 
 ---
 
-### tail
+### ⚝ tail
 
 ```shell
 # 默认显示后十行
@@ -1668,7 +1720,7 @@ tail [options] <file>
 
 ---
 
-### tr
+### ⚝ tr
 
 ```shell
 # 替换相同数量的字符
@@ -1681,7 +1733,7 @@ echo 'hello world' | tr ' ' '\n'
 
 ---
 
-### uniq
+### ⚝ uniq
 
 ```shell
 # uniq 只能去除相邻字符串的重复，所以需要先使用 `sort` 进行排序
@@ -1698,7 +1750,7 @@ cat $demo | sort | uniq
 
 
 
-### summary
+### ⚝ summary
 
 #### substring
 
@@ -1798,7 +1850,7 @@ echo '1,2,3' | awk -F , '{print $1}'
 
 ---
 
-## timezone
+## ★ timezone
 
 - debain
 
@@ -1833,71 +1885,7 @@ export TZ="Asia/Shanghai"
 
 ---
 
-## user
-
-```shell
-# 所有用户
-cat /etc/passwd
-# getent passwd
-
-# 添加用户
-sudo useradd -G root,docker -s /bin/zsh -d /home/user -m user
-
-# 删除用户
-sudo userdel -r user
-```
-
-- group
-
-  ```shell
-  # 当前用户所属组
-  groups
-
-  # 添加用户组
-  sudo groupadd usergroup
-
-  # 删除用户组
-  sudo groupdel usergroup
-
-  # 添加用户至 root 组
-  sudo gpasswd -a $USER root
-
-  # 从 root 组删除用户
-  sudo gpasswd -d $USER root
-
-  # 更新 root 用户组
-  newgrp usergroup
-  ```
-
-- sudoers
-
-  ```shell
-  sudo vim /etc/sudoers
-
-  # 添加 sudo 权限
-  username ALL=(ALL:ALL) ALL
-
-  # 普通用户 sudo 免密
-  username ALL=(ALL) NOPASSWD:ALL
-  ```
-
-
-
-- password
-
-  ```shell
-  # 修改当前用户密码
-  sudo passwd
-
-  # 修改其他用户密码
-  sudo passwd sun
-  ```
-
-
-
----
-
-## vim
+## ★ vim
 
 - keywords
 
@@ -1914,7 +1902,7 @@ sudo userdel -r user
 
 ---
 
-## wget
+## ★ wget
 
 ```shell
 wget [optoins] <url>
@@ -1934,7 +1922,7 @@ wget -O - <url>
 
 ---
 
-## ☆ scripts
+## ⚙ scripts
 
 - [remote](.share/scripts/remote.sh)
 
