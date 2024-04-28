@@ -80,6 +80,8 @@ git push origin <local-branch>:<remote-branch>
   git push origin HEAD:[branch] --force
   ```
 
+
+
 ---
 
 ## 5. branch
@@ -104,7 +106,34 @@ git branch --set-upstream-to=<remote-branch> <local-branch>
 
 ---
 
-## 6. submodule
+## 6. github
+
+```shell
+# ssh: connect to host github.com port 22: Connection timed out
+
+cat >> ~/.ssh/config << EOF
+Host github.com
+  Port 443
+  Hostname ssh.github.com
+  ServerAliveInterval 120
+  ServerAliveCountMax 720
+  # IdentityFile ~/.ssh/id_rsa
+  PreferredAuthentications publickey
+EOF
+```
+
+- githubusercontent
+
+  ```shell
+  # 下载 github 项目文件
+  wget -O - https://raw.githubusercontent.com/<user>/<repo>/<branch>/<filepath> > <file>
+  ```
+
+  
+
+---
+
+## 7. submodule
 
 - ##### 添加
 
@@ -136,14 +165,7 @@ git branch --set-upstream-to=<remote-branch> <local-branch>
 
 ---
 
-## 7. [gitconfig](.share/gitconfig)
-
----
-
-## 8. completion
-
-```shell
-```
+## 8. [gitconfig](.share/gitconfig)
 
 
 
@@ -166,17 +188,7 @@ git push -f
 ## 10. git-for-windows
 
 ```shell
-# ssh: connect to host github.com port 22: Connection timed out
 
-cat >> ~/.ssh/config << EOF
-Host github.com
-  Port 443
-  Hostname ssh.github.com
-  ServerAliveInterval 120
-  ServerAliveCountMax 720
-  # IdentityFile ~/.ssh/id_rsa
-  PreferredAuthentications publickey
-EOF
 ```
 
 
@@ -217,15 +229,6 @@ rm -rf ~/AppData/Local/Temp/* &>/dev/null
 - ##### profile.d
 
   - [git-prompt.sh](.share/scripts/git-prompt.sh)
-
----
-
-## 11. githubusercontent
-
-```shell
-# 下载 github 项目文件
-wget -O - https://raw.githubusercontent.com/<user>/<repo>/<branch>/<filepath> > <file>
-```
 
 ## ——————
 

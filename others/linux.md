@@ -32,7 +32,7 @@ source /usr/share/bash-completion/completions/git
   ```shell
   # curl -s https://raw.githubusercontent.com/docker/cli/master/contrib/completion/bash/docker > ~/.completion/docker/_docker
   curl -s https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker > ~/.completion/docker/_docker
-
+  
   find "~/.completion" -t f -print | while read file; do source <(cat $file); done
   ```
 
@@ -115,7 +115,7 @@ sudo userdel -r user
   ```shell
   # 修改当前用户密码
   sudo passwd
-
+  
   # 修改其他用户密码
   sudo passwd sun
   ```
@@ -149,17 +149,17 @@ EOF
   .:53 {
     hosts {
       192.168.1.1 coredns.com
-
+  
       ttl 5
       fallthrough
     }
-
+  
     # 未匹配的域名转发到上游 DNS 服务器
     forward . 192.168.1.1
-
+  
     errors
     log stdout
-
+  
     cache 60
     reload 3s
   }
@@ -217,7 +217,7 @@ curl [optins] <url>
 
   ```shell
   # Disk Free
-
+  
   # 显示文件系统磁盘空间利用情况
   df -h
   ```
@@ -228,13 +228,13 @@ curl [optins] <url>
 
   ```shell
   # Dish Usage
-
+  
   # 显示当前文件夹总大小
   du -sh
-
+  
   # 显示子文件夹大小
   du -h --max-depth=1
-
+  
   # -s: 显示总计大小
   # -h: 以 MB、MB、GB 的格式显示
   ```
@@ -399,7 +399,7 @@ fi
   for i in "a" "b" "c"; do
     echo $i
   done
-
+  
   for i in ${a[@]}; do
     echo $i
   done
@@ -412,7 +412,7 @@ fi
   ```shell
   # shell 中管道 '|' 会创建子 shell，导致变量作用域改变
   # 若要在 `while read` 循环中，修改外部变量
-
+  
   # 1. here-string
   index=0
   while read line; do
@@ -439,21 +439,21 @@ fi
     ```shell
     # 备份
     sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-
+  
     ···
     # cqu
     http://mirrors.cqu.edu.cn
-
+  
     # ustc
     http://mirrors.ustc.edu.cn
-
+  
     # aliyun
     http://mirrors.aliyun.com
-
+  
     # tsinghua
     http://mirrors.tuna.tsinghua.edu.cn
     ···
-
+  
     ··· Debian 11
     deb http://mirrors.aliyun.com/debian/ bullseye main
     # deb-src http://mirrors.aliyun.com/debian/ bullseye main
@@ -464,7 +464,7 @@ fi
     deb http://mirrors.aliyun.com/debian-security bullseye-security main
     # deb-src http://mirrors.aliyun.com/debian-security bullseye-security main
     ···
-
+  
     apt update -y
     ```
 
@@ -483,14 +483,14 @@ fi
 
   ```shell
   apt install nfs-kernel-server -y
-
+  
   # 设置挂载目录
   mkdir -p /data/nfs
   chmod a+w /data/nfs
   cat >> /etc/exports << EOF
   /data/nfs 192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)
   EOF
-
+  
   # ro: 以只读方式挂载
   # rw: 赋予读写权限
   # sync: 同步检查
@@ -498,11 +498,11 @@ fi
   # subtree_check: 验证文件路径
   # no_subtree_check: 不验证文件路径
   # no_root_squash: (危险项) 客户端 root 拥有服务端 root 权限
-
+  
   # 启动服务
   sudo sh -c 'systemctl enable rpcbind && systemctl start rpcbind'
   sudo sh -c 'systemctl enable nfs-kernel-server && systemctl start nfs-kernel-server'
-
+  
   # 查看
   showmount -e
   ```
@@ -513,22 +513,22 @@ fi
 
   ```shell
   apt install nfs-common -y
-
+  
   # 创建 nfs 共享目录
   sudo mkdir -p /data/nfs
-
+  
   # 连接 nfs 服务器
   cat >> /etc/fstab << EOF
   # nfs-server
   192.168.1.10:/data/nfs /data/nfs nfs4 defaults,user,exec 0 0
   EOF
-
+  
   #
   sudo mount -a
-
+  
   # 启动服务
   sudo sh -c 'systemctl enable rpcbind && systemctl start rpcbind'
-
+  
   # 查看
   df -h
   ```
@@ -539,46 +539,76 @@ fi
 
 ## ★ nginx
 
-- rewrite
+[nginx.conf](.share/nginx.conf)
 
-  ```
-  syntax:  rewrite regex replacement [flag];
-  context: server, location, if
-  ```
+```nginx
+server {
+  listen 8080;
+  server_name localhost;
+    
+  # 防火墙
+  allow 127.0.0.1;
+  deny  all;
 
-  ```nginx
-  rewrite ^/api/(.*)$ /$1 break;
-  # /api/login => /login
-  ```
-
-
-
-- proxy_pass
-
-  ```
-  syntax:  proxy_pass URL;
-  context: location, if in location, limit_except
-  ```
-
-  ```nginx
-  location /api/ {
-    proxy_pass http://127.0.0.1;
-    # http://example.com/api/login => http://127.0.0.1/api/login
+  client_max_body_size 1024m; # 配置通过 nginx 上传文件的最大大小
+        
+  location / {
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_pass http://destination.com;
   }
+    
+  gzip      on; # 启用 gzip 压缩功能
+  gzip_vary on; # 根据 Accept-Encoding 请求头的内容进行压缩处理
+  gzip_types       text/css text/xml text/plain text/javascript application/xml application/xml+rss application/json application/javascript image/gif image/png image/jpeg; # 定义需要压缩的 MIME 类型
+  gzip_buffers     16 16k; # gzip 压缩缓冲区大小。总分配 16 * 16k = 256kb 的内存
+  gzip_min_length  4k;     # 设置允许压缩的最小文件大小
+  gzip_comp_level  3;      # 压缩级别，级别越高，压缩效果越好，但越耗费资源
+}
+```
 
-  # 注意：
-  #   1. 若 URL 中包含 URI，则 location 中的 URI 则会被替换. eg:
-  #     location /api/ {
-  #       proxy_pass http://127.0.0.1/apiv1/;
-  #       # http://example.com/api/login => http://127.0.0.1/apiv1/login
-  #     }
-  #   2. 若 proxy_pass 前用了 rewrite，那么 proxy_pass 的 URI 无效. eg:
-  #     location /api/ {
-  #       rewrite ^/api/(.*)$ /apiv2/$1 break;
-  #       proxy_pass http://127.0.0.1/apiv1/; # apiv1 无效
-  #       # http://example.com/api/login => http://127.0.0.1/apiv2/login
-  #     }
-  ```
+- location
+
+  - rewrite
+
+    ```
+    syntax:  rewrite regex replacement [flag];
+    context: server, location, if
+    ```
+
+    ```nginx
+    rewrite ^/api/(.*)$ /$1 break;
+    # /api/login => /login
+    ```
+
+  - proxy_pass
+
+    ```
+    syntax:  proxy_pass URL;
+    context: location, if in location, limit_except
+    ```
+
+    ```nginx
+    location /api/ {
+      proxy_pass http://127.0.0.1;
+      # http://example.com/api/login => http://127.0.0.1/api/login
+    }
+    
+    # 注意：
+    #   1. 若 URL 中包含 URI，则 location 中的 URI 则会被替换. eg:
+    #     location /api/ {
+    #       proxy_pass http://127.0.0.1/apiv1/;
+    #       # http://example.com/api/login => http://127.0.0.1/apiv1/login
+    #     }
+    #   2. 若 proxy_pass 前用了 rewrite，那么 proxy_pass 的 URI 无效. eg:
+    #     location /api/ {
+    #       rewrite ^/api/(.*)$ /apiv2/$1 break;
+    #       proxy_pass http://127.0.0.1/apiv1/; # apiv1 无效
+    #       # http://example.com/api/login => http://127.0.0.1/apiv2/login
+    #     }
+    ```
 
 
 
@@ -615,13 +645,13 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
     ```shell
     ver=zsh-5.9-2
     curl -s https://seepine.com/git/oh-my-zsh/$ver-x86_64.pkg.zip > $ver.zip
-
+  
     # 解压
     unzip -q -o -d $ver $ver.zip
-
+  
     # 移动 zsh 到 git 安装目录
     cp $ver/{etc,usr} $GITPATH/
-
+  
     # git-for-windows 切换到 zsh
     exec zsh
 
@@ -637,17 +667,17 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
     done
     unset i
   fi
-
+  
   # export
   set completion-ignore-case on
   export TERM=xterm-256color
   export TIME_STYLE="+%Y-%m-%d %H:%M:%S"
-
+  
   # alias
   alias l="ls -lh"
   alias la="ls -Alh"
   alias his="history -i"
-
+  
   EOF
   ```
 
@@ -657,9 +687,9 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
 
   ```shell
   dircolors >> ~/.zshrc
-
+  
   sed -s -i 's/ow=34;42/ow=34/' ~/.zshrc
-
+  
   # 修改 ow=34;42 ==> ow=34
   # 30: 黑色前景
   # 34: 蓝色前景
@@ -784,13 +814,13 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
       ;;
     esac
   done
-
+  
   # 该命令可以识别 '-a -b -c' 选项。其中 '-a' 需要设置 value，'-b -c' 不需要 value
   # getopts 每次调用时，会将下一个 'opt' 放置在变量中，$OPTARG 可以从 '$*' 中拿到参数值。$OPTARG 是内置变量
   # 第一个 ':' 表示忽略错误
   # a: 表示该 'opt' 需要 value
   # b  表示该 'opt' 不需要 value
-
+  
   # 去除 options 之后的参数, 可以在后面的 shell 中进行参数处理
   shift $(($OPTIND - 1))
   echo $1
@@ -827,7 +857,7 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
   ```shell
   # cpu 核心数
   nproc
-
+  
   # cpu 详细信息
   lscpu
   ```
@@ -1017,7 +1047,7 @@ EOF
     IdentityFile ~/.ssh/is_rsa
     PreferredAuthentications publickey
   EOF
-
+  
   ## 正则匹配
   cat > $HOME/.ssh/config << EOF
   Host 192.168.0.*
@@ -1419,7 +1449,7 @@ fi
 
   ```shell
   echo -e '<ANSI>'
-
+  
   # '\033[<N>A': 向上移动 N 行
   # '\033[<N>B': 向下移动 N 行
   # '\033[<N>C': 向右移动 N 列
@@ -1930,7 +1960,7 @@ wget -O - <url>
   cat >> $HOME/.zshrc << EOF
   alias r="$HOME/.scripts/remote.sh"
   EOF
-
+  
   source $HOME/.zshrc
   ```
 
@@ -1940,7 +1970,7 @@ wget -O - <url>
 
   ```shell
   crontab -e
-
+  
   # 每分钟执行
   * * * * * /root/.scripts/watchers.sh
   ```
@@ -1953,6 +1983,6 @@ wget -O - <url>
   cat >> $HOME/.zshrc << EOF
   alias d="$HOME/.scripts/docker-cleaner.sh"
   EOF
-
+  
   source $HOME/.zshrc
   ```
