@@ -52,6 +52,7 @@
 ## 3. mkilnk
 
 ```shell
+# 注意：需要手动创建目标路径
 # cmd
 mklink /D "[链接名称]" "[目标路径]"
 
@@ -106,7 +107,7 @@ mklink /D "C:\Program Files\CCleaner" "D:\CCleaner"
 
   ```shell
   # 关闭微软网络连接测试
-
+  
   regedit:
   	"计算机\HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Services\NlaSvc\Parameters\Internet"
   	EnableActiveProbing -> 0

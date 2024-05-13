@@ -439,21 +439,21 @@ fi
     ```shell
     # 备份
     sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-  
+    
     ···
     # cqu
     http://mirrors.cqu.edu.cn
-  
+    
     # ustc
     http://mirrors.ustc.edu.cn
-  
+    
     # aliyun
     http://mirrors.aliyun.com
-  
+    
     # tsinghua
     http://mirrors.tuna.tsinghua.edu.cn
     ···
-  
+    
     ··· Debian 11
     deb http://mirrors.aliyun.com/debian/ bullseye main
     # deb-src http://mirrors.aliyun.com/debian/ bullseye main
@@ -464,7 +464,7 @@ fi
     deb http://mirrors.aliyun.com/debian-security bullseye-security main
     # deb-src http://mirrors.aliyun.com/debian-security bullseye-security main
     ···
-  
+    
     apt update -y
     ```
 
@@ -645,13 +645,13 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
     ```shell
     ver=zsh-5.9-2
     curl -s https://seepine.com/git/oh-my-zsh/$ver-x86_64.pkg.zip > $ver.zip
-  
+    
     # 解压
     unzip -q -o -d $ver $ver.zip
-  
+    
     # 移动 zsh 到 git 安装目录
     cp $ver/{etc,usr} $GITPATH/
-  
+    
     # git-for-windows 切换到 zsh
     exec zsh
 
