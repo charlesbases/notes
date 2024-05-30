@@ -32,7 +32,11 @@
 - 刷新 dns 缓存
 
   ```shell
+  # cmd
   ipconfig /flushdns
+  
+  # powershell
+  Clear-DnsClientCache
   ```
 
 - 禁用网卡

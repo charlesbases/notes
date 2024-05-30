@@ -87,6 +87,7 @@ git clone -c core.compression=0 <repo.url>
 # '-b master'
 # '--single-branch' 只拉取指定分支
 # '--depth 1'       只拉取最新的提交记录
+git clone -b master --single-branch --depth 1 -c core.compression=0 <repo.url>
 ```
 
 

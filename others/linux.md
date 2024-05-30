@@ -176,11 +176,18 @@ curl [optins] <url>
 
 # options
 #
+# -L  重定向
 # -X  HTTP Method. eg: `-X POST`
 # -H  HTTP Header. eg: `-H "Content-Type: application/json"`
 # -d  Request Param. eg: `-d '{"username": "user", "password": "password"}'`
 # -k, --insecure  不验证 ssl 证书
 # -s, --silent    静默模式，不显示其他信息
+# --output <path> 另存为
+```
+
+```shell
+# 文件下载
+curl -s -L <repo> --output <path>
 ```
 
 
@@ -677,6 +684,10 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
   alias l="ls -lh"
   alias la="ls -Alh"
   alias his="history -i"
+  
+  alias rm='rm -i'
+  alias cp='cp -i'
+  alias mv='mv -i'
   
   EOF
   ```
@@ -1324,6 +1335,17 @@ echo '1 2 3' | awk -v OFS="," '{print $1,$2}'    # 1,2
 echo '1 2 3' | awk -v OFS="," '{$1=$1;print $0}' # 1,2,3
 ```
 
+
+
+#### regexp
+
+```shell
+# 排除注释
+awk 'NF && !/^[[:space:]]*#/ {print}' postgresql.conf
+```
+
+
+
 #### substring
 
 ```shell
@@ -1532,6 +1554,17 @@ grep -nr 'sync.Once' "$(dirname $(which go))/../src"
 # 统计行
 grep -nr 'sync.Once' "$(dirname $(which go))/../src" | wc -l
 ```
+
+
+
+#### regexp
+
+```shell
+# 排除注释
+grep -v '^[[:space:]]*#' postgresql.conf
+```
+
+
 
 #### substring
 
@@ -1783,6 +1816,13 @@ cat $demo | sort | uniq
 ### ⚝ summary
 
 #### substring
+
+```shell
+# 将字符串以 '.' 分割，并打印最后一部分
+filename=abc.tar.gz
+
+echo $filename | awk -F '.' '{print $NF}'
+```
 
 ```shell
 filename=abc.tar.gz

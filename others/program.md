@@ -1,3 +1,33 @@
+## C#
+
+### convention
+
+```shell
+# 文件：PascalCase，通常与文件中主要的类或接口的名称相匹配
+# 文件夹：PascalCase，文件夹名称应该反映其内容或功能
+```
+
+```shell
+# 命名空间（Namespace）：PascalCase
+# 类（Class）：PascalCase，通常是名词或名词短语，表示一个具体的事物或概念
+# 方法（Methods）：PascalCase，通常为动词或动词短语
+# 属性（Properties）：PascalCase，通常为名词或名词短语，表示对象的特性或状态
+# 事件（Events）：PascalCase，通常以 'On' 开头，后面跟上一个表示事件的名词或名词短语
+# 字段（Fields）：camelCase，通常是私有的，并不建议直接暴露字段，如果需要公开，应该通过属性来访问
+# 常量（Constants）：PascalCase，并且所有字母大写，可以使用 '_' 分割单词
+# 局部变量（Local Variables）：camelCase
+# 参数（Parameters）：camelCase
+# 接口（Interfaces）：PascalCase，通常以 'I' 开头，后面跟上一个名词或名词短语，表示一种规范或契约
+# 枚举（Enums）：PascalCase
+# 枚举项（Enum Items）PascalCase
+# 泛型类型参数（Type Parameters in Generics）：通常使用单个大写字母，如 'T' 表示泛型类型， 'V' 表示值的类型
+# 异步方法（Async Methods）：PascalCase，通常以 'Async' 结尾
+```
+
+
+
+---
+
 ## lua
 
 ### 1. random
@@ -53,6 +83,15 @@ rustup self uninstall
 ## golang
 
 ```shell
+# golang 设计与实现
+https://draveness.me/golang
+```
+
+
+
+### download
+
+```shell
 # download
 wget -c https://golang.google.cn/dl/go1.20.10.linux-amd64.tar.gz -O - | sudo tar -xz -C /usr/local
 
@@ -61,6 +100,7 @@ cat >> ~/.zshrc << EOF
 export GOHONE="/usr/local/go"
 export GOPATH="/opt/go"
 export GOPROXY="https://goproxy.io,direct"
+export GOSUMDB="off"
 export GO111MODULE="on"
 EOF
 
@@ -301,8 +341,14 @@ func main() {
 		},
 	}
 
-	// 子命令添加 flags
-	sub.Flags().StringP("field", "f", "default", "input field")
+    // flags
+    
+	// 将选项绑定到指定类型的指针变量上
+	var enableJson bool
+	sub.PersistentFlags().BoolVarP(&enableJson, "json", "j", false, "Enable json output")
+
+	// 解析选项，并返回一个变量指针
+	_ = sub.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose output")
 
 	// 添加子命令
 	app.AddCommand(sub)
@@ -390,14 +436,4 @@ EOF
 ```
 
 ## ————————
-
-## tips
-
-### nats
-
-```shell
-# 1. nats 集群负载的是客户端，而不是 nats 请求，所以若是客户端并发过高，还是会导致节点高负载；
-# 2. nats 集群节点宕机后，有自动重连机制，会以相同的客户端 ID 连接其他可用节点（但是需要在本地代码内手动重试），
-#    待节点恢复后，客户端会自动重启至之前节点；
-```
 
