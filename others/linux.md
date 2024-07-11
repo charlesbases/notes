@@ -15,6 +15,20 @@
 
 ---
 
+## ★ base64
+
+```shell
+# encode
+echo "hello word" | base64 && echo
+
+# decode
+echo "aGVsbG8gd29yZAo=" | base64 --decode
+```
+
+
+
+---
+
 ## ★ bash-completion
 
 ```shell
@@ -188,6 +202,11 @@ curl [optins] <url>
 ```shell
 # 文件下载
 curl -s -L <repo> --output <path>
+```
+
+```shell
+# 状态码
+curl -s -o /dev/null -w "%{http_code}" -I "$url"
 ```
 
 
@@ -604,7 +623,7 @@ server {
     }
     
     # 注意：
-    #   1. 若 URL 中包含 URI，则 location 中的 URI 则会被替换. eg:
+    #   1. 若 proxy_pass 的 URL 中包含 URI，则 location 中的 URI 则会被替换. eg:
     #     location /api/ {
     #       proxy_pass http://127.0.0.1/apiv1/;
     #       # http://example.com/api/login => http://127.0.0.1/apiv1/login
