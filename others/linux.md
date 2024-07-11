@@ -15,6 +15,20 @@
 
 ---
 
+## ★ base64
+
+```shell
+# encode
+echo "hello word" | base64 && echo
+
+# decode
+echo "aGVsbG8gd29yZAo=" | base64 --decode
+```
+
+
+
+---
+
 ## ★ bash-completion
 
 ```shell
@@ -169,31 +183,6 @@ EOF
 
 ---
 
-## ★ curl
-
-```shell
-curl [optins] <url>
-
-# options
-#
-# -L  重定向
-# -X  HTTP Method. eg: `-X POST`
-# -H  HTTP Header. eg: `-H "Content-Type: application/json"`
-# -d  Request Param. eg: `-d '{"username": "user", "password": "password"}'`
-# -k, --insecure  不验证 ssl 证书
-# -s, --silent    静默模式，不显示其他信息
-# --output <path> 另存为
-```
-
-```shell
-# 文件下载
-curl -s -L <repo> --output <path>
-```
-
-
-
----
-
 ## ★ date
 
 ```shell
@@ -303,6 +292,9 @@ find . -type d -print
 # 只显示文件
 find . -type f -print
 
+# 只显示子文件夹
+find . -maxdepth 1 -type d -printf '%f\n'
+
 # 排除文件夹
 find . -name .git -prune -o -type f -print
 find . -name .git -prune -o -name .idea -prune -o -type f -print
@@ -310,11 +302,12 @@ find . -name .git -prune -o -name .idea -prune -o -type f -print
 # 匹配相关文件名
 find . -type f -name "*.go" -print
 
-# `-print`  显示匹配项到标准输出
-# `-type d` 显示文件夹
-# `-type f` 显示文件
-# `-mindepth 1` 搜索的最小目录层级（从一级子目录开始）
-# `-maxdepth 1` 搜索的最大目录层级（只搜索当前目录及其一级子目录）
+# `-print`         默认输出格式, 输出完整路径. eg: "./xxx/xxx"
+# `-printf '%f\n'` 自定义输出, 不输出根文件夹
+# `-type d`        显示文件夹
+# `-type f`        显示文件
+# `-mindepth 1` 搜索的最小目录层级 (从一级子目录开始)
+# `-maxdepth 1` 搜索的最大目录层级 (只搜索当前目录及其一级子目录)
 # `-name .git -prune` 排除名称为 '.git' 的文件夹
 # `-o` 或，用于连接多个表达式
 ```
@@ -411,8 +404,16 @@ fi
     echo $i
   done
   ```
-
-
+  
+  ```shell
+  # 遍历文件
+  for i in $(ls); do echo $i; done
+  
+  # 带有文件夹前缀
+  for i in ./*; do echo $i; done
+  ```
+  
+  
 
 - while
 
@@ -604,7 +605,7 @@ server {
     }
     
     # 注意：
-    #   1. 若 URL 中包含 URI，则 location 中的 URI 则会被替换. eg:
+    #   1. 若 proxy_pass 的 URL 中包含 URI，则 location 中的 URI 则会被替换. eg:
     #     location /api/ {
     #       proxy_pass http://127.0.0.1/apiv1/;
     #       # http://example.com/api/login => http://127.0.0.1/apiv1/login
@@ -681,8 +682,8 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
   export TIME_STYLE="+%Y-%m-%d %H:%M:%S"
   
   # alias
-  alias l="ls -lh"
-  alias la="ls -Alh"
+  alias l="ls -lhv"
+  alias la="ls -Alhv"
   alias his="history -i"
   
   alias rm='rm -i'
@@ -1955,24 +1956,37 @@ export TZ="Asia/Shanghai"
 
 ---
 
-## ★ vim
+## ★ transport
 
-- keywords
+### ⚝ curl
 
-  ```shell
-  # 快捷键
+```shell
+curl [optins] <url>
 
-  # G:  跳至文本最后一行
-  # gg: 跳至文本首行
-  # $:  跳至当前行最后一个字符
-  # 0:  跳至当前行首字符
-  ```
+# options
+#
+# -L  重定向
+# -X  HTTP Method. eg: `-X POST`
+# -H  HTTP Header. eg: `-H "Content-Type: application/json"`
+# -d  Request Param. eg: `-d '{"username": "user", "password": "password"}'`
+# -k, --insecure  不验证 ssl 证书
+# -s, --silent    静默模式，不显示其他信息
+# --output <path> 另存为
+```
 
-- [.vimrc](.share/.vimrc)
+```shell
+# 文件下载
+curl -s -L <repo> --output <path>
+```
 
----
+```shell
+# 链接检查
+curl -s -o /dev/null -w "%{http_code}" -I "$url"
+```
 
-## ★ wget
+
+
+### ⚝ wget
 
 ```shell
 wget [optoins] <url>
@@ -1987,6 +2001,40 @@ wget [optoins] <url>
 # 将文件内容下载并保存到管道
 wget -O - <url>
 ```
+
+```shell
+# windows wget
+curl -s -L https://eternallybored.org/misc/wget/1.21.4/64/wget.exe --output wget.exe
+```
+
+```shell
+# 链接检查
+# wget --spider -q -o /dev/null "https://desktop.docker.com/win/main/amd64/175267/Docker%20Desktop%20Installer.exe"; echo $?
+wget --spider -q -o /dev/null "https://desktop.docker.com/win/main/amd64/175267/Docker%20Desktop%20Installer.exe"
+if [ $? -eq 0 ]; then echo "yes"; else echo "no"; fi
+
+# options
+# --spider 只获取文件信息, 不下载
+```
+
+
+
+---
+
+## ★ vim
+
+- keywords
+
+  ```shell
+  # 快捷键
+
+  # G:  跳至文本最后一行
+  # gg: 跳至文本首行
+  # $:  跳至当前行最后一个字符
+  # 0:  跳至当前行首字符
+  ```
+
+- [.vimrc](.share/.vimrc)
 
 
 
