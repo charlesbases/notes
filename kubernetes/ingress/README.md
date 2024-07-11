@@ -104,6 +104,7 @@ sed -i -s 's/90Mi/128Mi/' ingress-nginx.yaml
     namespace: default
     annotations:
       # kubernetes.io/ingress.class: "nginx"                  # 等同于 ingressClassName: nginx
+      # nginx.ingress.kubernetes.io/use-http2: 'true'         # user HTTP/2.0
       nginx.ingress.kubernetes.io/enable-cors: "true"
       nginx.ingress.kubernetes.io/proxy-body-size: 1M         # default: 1M
       nginx.ingress.kubernetes.io/proxy-connect-timeout: '30' # 秒
@@ -131,7 +132,7 @@ sed -i -s 's/90Mi/128Mi/' ingress-nginx.yaml
                 number: 8080
   
   ```
-
+  
   ```yaml
   # cors
   apiVersion: networking.k8s.io/v1

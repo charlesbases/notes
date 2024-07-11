@@ -1,4 +1,27 @@
+## ★ .gitignore
+
+```shell
+# 忽略所有文件和文件夹，包括隐藏的文件和文件夹 
+**
+
+# 排除 Scripts 文件夹本身
+!Scripts/
+# 排除 Scripts 文件夹内的所有文件和子文件夹
+!Scripts/**
+```
+
+
+
+---
+
 ## ★ [gitconfig](.share/gitconfig)
+
+```shell
+# 优先级
+本地仓库配置 (.git/config) > 全局配置 (~/.gitconfig) > 系统配置 (/etc/gitconfig)
+```
+
+
 
 ---
 
@@ -27,6 +50,25 @@ git branch --set-upstream-to=<remote-branch> <local-branch>
   ```
 
   
+
+---
+
+### ☆ clone
+
+```shell
+# git pull 下载小文件时，禁用 gzip  来提高下载速度
+git clone -c core.compression=0 <repo.url>
+
+# '-c core.compression=0' 禁用 gzip
+# '-b <branch>'     将新创建的 HEAD 指向指定分支
+# '--single-branch' 只拉取指定分支
+# '--depth 1'       只拉取最新的提交记录, 暗含 '--single-branch'
+# '--no-tags'       不克隆任何标签
+# ''
+git clone -b master --single-branch --depth 1 -c core.compression=0 <repo.url>
+```
+
+
 
 ---
 
@@ -80,14 +122,7 @@ git push -f
 ### ☆ pull
 
 ```shell
-# git pull 下载小文件时，禁用 gzip  来提高下载速度
-git clone -c core.compression=0 <repo.url>
 
-# '-c core.compression=0' 禁用 gzip
-# '-b master'
-# '--single-branch' 只拉取指定分支
-# '--depth 1'       只拉取最新的提交记录
-git clone -b master --single-branch --depth 1 -c core.compression=0 <repo.url>
 ```
 
 
@@ -211,19 +246,33 @@ git rev-parse --short HEAD
 
 ## ★ github
 
-```shell
-# ssh: connect to host github.com port 22: Connection timed out
+- ssh: connect to host github.com port 22: Connection timed out
 
-cat >> ~/.ssh/config << EOF
-Host github.com
-  Port 443
-  Hostname ssh.github.com
-  ServerAliveInterval 120
-  ServerAliveCountMax 720
-  # IdentityFile ~/.ssh/id_rsa
-  PreferredAuthentications publickey
-EOF
-```
+  ```shell
+  # 使用 443 端口
+  
+  cat >> ~/.ssh/config << EOF
+  Host github.com
+    Port 443
+    Hostname ssh.github.com
+    ServerAliveInterval 120
+    ServerAliveCountMax 720
+    # IdentityFile ~/.ssh/id_rsa
+    PreferredAuthentications publickey
+  EOF
+  ```
+
+  
+
+- ssh: connect to host ssh.github.com port 443: Connection timed out
+
+  ```shell
+  # 添加 hosts 映射
+  # https://www.ipaddress.com/website/ssh.github.com/
+  #   搜索 "DNS Resource Records"
+  ```
+
+  
 
 - githubusercontent
 
@@ -270,10 +319,3 @@ rm -rf ~/AppData/Local/Temp/* &>/dev/null
   - [git-prompt.sh](.share/scripts/git-prompt.sh)
 
 ## ——————
-
-## ★ alias
-
-```shell
-alias gitc = "git checkout ."
-```
-

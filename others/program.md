@@ -1,5 +1,19 @@
 ## C#
 
+### tips
+
+```shell
+# a?.b
+# 作用: 当 a 为 null 时, 返回 b 的默认值; 否则返回 a.b 的值
+# 用途: 安全地访问 a.b 的值, 避免异常
+
+# a!.b
+# 作用: 告诉编辑器, 即使 a 为 null, 强制访问 b
+# 用途: 在确认 a 不为 null 时, 可提高 a.b 访问性能, 否则会导致 NullReferenceException
+```
+
+
+
 ### convention
 
 ```shell
@@ -24,7 +38,101 @@
 # 异步方法（Async Methods）：PascalCase，通常以 'Async' 结尾
 ```
 
+### unity
 
+#### application
+
+```shell
+# Application.dataPath: 游戏数据文件夹路径。（只读，编译后加密）
+# Application.streamingAssetsPath: 游戏数据文件夹路径。（只读，明文）
+# Application.persistentDataPath: 持久化目录。（读写，各操作系统默认的数据存储路径）
+# Application.temporaryCachePath: 临时目录。（读写，各操作系统默认的临时文件夹）
+```
+
+
+
+#### structure
+
+```shell
+MyProject
+├── Assets (资源目录)
+│   ├── Animations/ (动画)
+│   │   ├── Characters/ (角色动画)
+│   │   ├── Effects/ (特效动画)
+│   │   ├── UI/ ( UI 动画)
+│   │   └── Shared/ (共享或通用动画)
+│   │
+│   ├── Artwork/ (2D 和 UI)
+│   │   ├── Backgrounds/
+│   │   ├── Characters/
+│   │   ├── Icons/
+│   │   ├── Palettes/
+│   │   ├── Sprites/
+│   │   └── Tilesets/
+│   │
+│   ├── Audio/ (音频)
+│   │   └── Sounds
+│   │
+│   ├── Brushes/ (画笔)
+│   │
+│   ├── Characters/ (角色模型)
+│   │
+│   ├── Editor/ (编辑器脚本和设置)
+│   │   ├── Script.cs
+│   │   └── Settings.asset
+│   │
+│   ├── Environment/ (环境模型)
+│   │
+│   ├── Materials/ (材质包)
+│   │
+│   ├── Models/ (3D 模型)
+│   │
+│   ├── Plugins/ (插件，如 DLLs 或原生代码库)
+│   │
+│   ├── Prefabs/ (预制体)
+│   │   ├── Characters/
+│   │   ├── Environments/
+│   │   └── Props/
+│   │
+│   ├── Resources/ (运行时动态加载的资源)
+│   │
+│   ├── Scripts (C# 脚本)
+│   │   ├── Controllers/ (控制器脚本)
+│   │   ├── Plugins/ (插件脚本)
+│   │   ├── Systems/ (系统脚本)
+│   │   ├── Utilities/ (公共脚本)
+│   │   └── Vendor/ (第三方脚本库)
+│   │
+│   ├── Scenes/ (场景文件)
+│   │
+│   ├── Shaders/ (着色器)
+│   │
+│   ├── Textures/ (纹理)
+│   │
+│   ├── Videos/ (视频文件)
+│   │
+│   └── WebGLTemplates/ (WebGL 构建的网页模板)
+│
+├── Build/ (构建输出目录)
+│   ├── Android/
+│   ├── IOS/
+│   ├── PC/
+│   ├── WebGL/
+│   └── Xbox/
+│
+├── Config/ (配置文件和设置)
+│
+├── Documentation/ (项目文档)
+│
+├── Logs/ (日志文件)
+│
+├── StreamingAssets
+│
+...
+
+```
+
+#### 
 
 ---
 

@@ -414,39 +414,50 @@ kubectl delete -n kube-system pods $(kubectl get pods -n kube-system | grep kube
 
 - ##### ApiServer
 
-  ```yaml
+  ```shell
   # 所有服务统一入口
   ```
 
 - ##### Scheduler
 
-  ```yaml
+  ```shell
   # 任务调度/分配
   ```
 
 - ##### ControllerManager
 
-  ```yaml
+  ```shell
   # 维持期望副本数目
   ```
 
 - ##### ETCD(v3)
 
-  ```yaml
+  ```shell
   # 键值对数据库，集群数据存储
   ```
 
 - ##### Kubelet
 
-  ```yaml
+  ```shell
   # 控制容器引擎(docker、container)，实现容器的生命周期管理
   ```
 
 - ##### Kube-Proxy
 
-  ```yaml
+  ```shell
   # 写入规则至 IPVS、IPTABLES，实现服务映射访问
   ```
+  
+- CoreDNS
+
+  ```shell
+  # 集群 DNS 服务器
+  
+  # 完全限定域名: <pod-name>.<service-name>.<namespace>.svc.<cluster.local>
+  #   cluster.local: 当前集群 DNS 域名后缀，默认为 'cluster.local'
+  ```
+
+  
 
 ---
 
@@ -503,7 +514,7 @@ kubectl delete -n kube-system pods $(kubectl get pods -n kube-system | grep kube
 
 ---
 
-### 4.3. [Deployment](./deploy.yaml)
+### 4.3. [Deployment](./deployment.yaml)
 
 ```shell
 # 无状态应用
