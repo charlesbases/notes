@@ -782,6 +782,9 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
   # select 菜单的提示语，会在展示菜单后打印
   PS3="请选择一个选项: "
 
+  # option 始终竖列展示
+  COLUMNS=1
+  
   select opt in "a" "b" "c" "quit"; do
     case $opt in
       "a")
