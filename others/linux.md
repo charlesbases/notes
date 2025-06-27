@@ -1283,8 +1283,11 @@ cat demo.txt | awk '{print $1,$3}'
 # 打印最后一列
 cat demo.txt | awk '{print $NF}'
 
-# 打印第9列和之后的内容
-cat demo.txt | awk '{for (i=1; i<9; i++) $i=""; print}' | sed 's/^[[:space:]]*//'
+# 移除前8列
+cat demo.txt | awk '{sub(/^([^[:space:]]+[[:space:]]+){8}/, ""); print}'
+
+# 移除后8列
+cat demo.txt | awk '{NF = NF-8; print}'
 
 # 打印行号
 cat demo.txt | awk '{print NR}'
