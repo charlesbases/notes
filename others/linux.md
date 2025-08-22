@@ -778,10 +778,13 @@ sed -i -s "s/robbyrussell/ys/g" $HOME/.zshrc && source $HOME/.zshrc
 
   ```shell
   # 简单菜单的控制结构
-
+  
+  # 指定一行只显示一列
+  COLUMNS=1
+  
   # select 菜单的提示语，会在展示菜单后打印
   PS3="请选择一个选项: "
-
+  
   select opt in "a" "b" "c" "quit"; do
     case $opt in
       "a")
@@ -1904,6 +1907,11 @@ sed -i 's/.*old.*/new/g' file.text
 ```shell
 # 将 ' ' 替换为 '\n'
 echo 'hello world' | tr ' ' '\n'
+```
+
+```shell
+# 去除文本首尾空格
+echo '   hello word' | awk '{$1=$1};1' 
 ```
 
 
